@@ -1,5 +1,5 @@
 {
-  "name": "ajs",
+  "name": "ajs-dnd",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,7 +17,7 @@
     "preshow:dist": "npm run build",
     "show:dist": "live-server dist"
   },
-  "author": "coursar",
+  "author": "Alexei Malinovskii",
   "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.12.10",
