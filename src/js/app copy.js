@@ -1,5 +1,3 @@
-// TODO: write code here
-
 const fileEl = document.querySelector('.overlapped');
 const overlapEl = document.querySelector('.overlap');
 const previewEl = document.querySelector('[data-id=preview]');
