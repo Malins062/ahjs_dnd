@@ -1,7 +1,7 @@
 const fileEl = document.querySelector('.overlapped');
 const overlapEl = document.querySelector('.overlap');
 const previewEl = document.querySelector('[data-id=preview]');
-const textPreviewEl = document.querySelector('[data-id=text-preview]')
+const textPreviewEl = document.querySelector('[data-id=text-preview]');
 
 overlapEl.addEventListener('click', () => {
   fileEl.dispatchEvent(new MouseEvent('click'));
@@ -26,7 +26,7 @@ fileEl.addEventListener('change', (evt) => {
     setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
   } else if (file.type.startsWith('text/')) {
-    readFile(file).then(data => textPreviewEl.value = data);
+    readFile(file).then((data) => textPreviewEl.value = data);
   }
 });
 
