@@ -38,6 +38,7 @@ export default class TasksListWidget {
           </div>
 
           <div class="taskslist-footer card-footer text-start p-2">
+              <div class="taskslist-items-add">&#10006;<div>
               <button class="btn btn-success" id="tasklist-add">Добавить</button>
           </div>
       </div>

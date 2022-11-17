@@ -2,6 +2,10 @@
   background-color: #dee2e6 !important;
 }
 
+.taskslist-items-add {
+  content: \2612;
+}
+
 .list-group {
   list-style-type: none;    
 }
