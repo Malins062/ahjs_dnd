@@ -1,0 +1,12 @@
+.taskslist {
+  background-color: #dee2e6 !important;
+}
+
+.list-group {
+  list-style-type: none;    
+}
+
+.list-group-item {
+  cursor: pointer;
+  list-style-type: none;    
+}
