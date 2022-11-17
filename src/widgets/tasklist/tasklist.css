@@ -1,3 +1,7 @@
+.hidden {
+  display: none;
+}
+
 .taskslist {
   background-color: #dee2e6 !important;
 }
