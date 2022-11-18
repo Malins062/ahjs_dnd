@@ -6,6 +6,12 @@
   background-color: #dee2e6 !important;
 }
 
+.taskslist-items-add,
+.taskslist-item {
+  user-select: none;
+  cursor: pointer;
+}
+
 .taskslist-item-close {
   position: absolute;  
   top: calc(0% + 0.2rem);

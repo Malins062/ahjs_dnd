@@ -75,7 +75,7 @@ export default class TasksListWidget {
       console.log(closeButton);
 
       closeButton.addEventListener('click', () => {
-        document.body.removeChild(item);
+        item.remove();
       });
 
       item.addEventListener('mouseover', (evt) => {
@@ -87,10 +87,12 @@ export default class TasksListWidget {
 
       item.addEventListener('mouseout', (evt) => {
         evt.preventDefault();
-        const delButton = evt.target.querySelector(TasksListWidget.delItemSelector);
-        if (delButton && !delButton.classList.contains('hidden')) {
-          delButton.classList.add('hidden');
-        }
+        const delButtons = document.querySelectorAll(TasksListWidget.delItemSelector);
+        delButtons.forEach(delButton => {
+          if (delButton && !delButton.classList.contains('hidden')) {
+            delButton.classList.add('hidden');
+          }  
+        });
       });
   
     });
