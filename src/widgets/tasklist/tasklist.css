@@ -6,8 +6,17 @@
   background-color: #dee2e6 !important;
 }
 
-.taskslist-items-add {
-  content: \2612;
+.taskslist-item-close {
+  position: absolute;  
+  top: calc(0% + 0.2rem);
+  left: calc(100% - 0.8rem);
+  font-size: xx-small;
+  font-weight: bold;
+}
+
+.taskslist-item-close:hover {
+  color: red;
+  font-size: x-small;
 }
 
 .list-group {

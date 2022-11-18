@@ -1,7 +1,7 @@
 import TasksListWidget from '../widgets/tasklist/tasklist';
 
 const widgetTasksToDo = new TasksListWidget(document.querySelector('#widget-container-1'), 
-  'Что запланировано делать', 
+  'Что запланировано сделать', 
   ['Доделать домашнее задание',
    'Завершить HTML верстку',
    'Написать тесты',
@@ -9,8 +9,8 @@ const widgetTasksToDo = new TasksListWidget(document.querySelector('#widget-cont
 widgetTasksToDo.bindToDOM();
 
 const widgetTasksInProgress = new TasksListWidget(document.querySelector('#widget-container-2'), 
-  'Задания в процессее', 
-  ['Работа над виджетом TasksKist',
+  'Задания в процессе', 
+  ['Работа над виджетом TasksList',
    'Кнопка ДОБАВИТЬ',
   ]);
 widgetTasksInProgress.bindToDOM();

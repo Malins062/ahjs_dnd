@@ -20,7 +20,11 @@ export default class TasksListWidget {
     const itemsHTML = (items) => {
       let html = '';
       items.forEach(taskText => {
-        html += `<li class="taskslist-item list-group-item mb-2">${taskText}</li>`
+        html = html + 
+          `<li class="taskslist-item list-group-item mb-2">
+            <div class="taskslist-item-text">${taskText}</div>
+            <div class="taskslist-item-close hidden">&#10005;</div>
+          </li>`
       })   
       return html;              
     };
@@ -38,7 +42,7 @@ export default class TasksListWidget {
           </div>
 
           <div class="taskslist-footer card-footer text-start p-2">
-              <div class="taskslist-items-add">&#10009; Добавить новую карточку &#10005;<div>
+              <div class="taskslist-items-add">&#10009; Добавить новую карточку<div>
               <button class="btn btn-success btn-sm hidden" id="tasklist-add">Добавить</button>
           </div>
       </div>
@@ -50,14 +54,46 @@ export default class TasksListWidget {
   }
 
   static get itemSelector() {
-    return 'tasklist-item';
+    return '.taskslist-item';
+  }
+  
+  static get delItemSelector() {
+    return '.taskslist-item-close';
   }
   
   bindToDOM() {
     this.parentEl.innerHTML = this.markup;
+
     const button = this.parentEl.querySelector(TasksListWidget.addItemSelector);
-    // console.log(this.parentEl, this.constructor.submitSelector, submit);
     button.addEventListener('click', e => this.onClick(e));
+
+    const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
+    items.forEach(item => {
+      console.log(item);
+
+      const closeButton = item.querySelector(TasksListWidget.delItemSelector);
+      console.log(closeButton);
+
+      closeButton.addEventListener('click', () => {
+        document.body.removeChild(item);
+      });
+
+      item.addEventListener('mouseover', (evt) => {
+        evt.preventDefault();
+        if (closeButton.classList.contains('hidden')) {
+          closeButton.classList.remove('hidden');
+        }
+      });
+
+      item.addEventListener('mouseout', (evt) => {
+        evt.preventDefault();
+        const delButton = evt.target.querySelector(TasksListWidget.delItemSelector);
+        if (delButton && !delButton.classList.contains('hidden')) {
+          delButton.classList.add('hidden');
+        }
+      });
+  
+    });
   }
 
   onClick(e) {
