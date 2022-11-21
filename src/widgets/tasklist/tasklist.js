@@ -42,15 +42,18 @@ export default class TasksListWidget {
           </div>
 
           <div class="taskslist-footer card-footer text-start p-2">
-              <div class="taskslist-items-add">&#10009; Добавить новую карточку<div>
-              <button class="btn btn-success btn-sm hidden" id="tasklist-add">Добавить</button>
+              <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
+              <div class="taskslist-items-card hidden">
+                <button class="btn btn-success btn-sm" id="tasklist-add">Добавить</button>
+                <div class="taskslist-items-card-close">&#10005;<div>
+              </div>
           </div>
       </div>
     `;
   }
 
   static get addItemSelector() {
-    return '[id=tasklist-add]';
+    return '.taskslist-items-add';
   }
 
   static get itemSelector() {
@@ -61,6 +64,10 @@ export default class TasksListWidget {
     return '.taskslist-item-close';
   }
   
+  static get cardDivSelector() {
+    return '.taskslist-items-card';
+  }
+  
   bindToDOM() {
     this.parentEl.innerHTML = this.markup;
     this.draggedEl = null;
@@ -69,8 +76,8 @@ export default class TasksListWidget {
   }
 
   initEvents(){
-    const button = this.parentEl.querySelector(TasksListWidget.addItemSelector);
-    button.addEventListener('click', e => this.onClickAddItem(e));
+    const buttonAddCard = this.parentEl.querySelector(TasksListWidget.addItemSelector);
+    buttonAddCard.addEventListener('click', e => this.onClickAddItem(e));
 
     const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach(item => {
@@ -85,8 +92,8 @@ export default class TasksListWidget {
 
       item.addEventListener('mousedown', (evt) => {
         evt.preventDefault();
-        console.log(evt.target, evt.currentTarget);
-        if (!evt.currentTarget.classList.contains('tasklist-item')) {
+        // console.log(evt.target, evt.currentTarget);
+        if (!evt.currentTarget.classList.contains('taskslist-item')) {
           return;
         }
 
@@ -96,6 +103,7 @@ export default class TasksListWidget {
         document.body.appendChild(this.ghostEl);
         this.ghostEl.style.left = `${evt.pageX - this.ghostEl.offsetWidth / 2}px`;
         this.ghostEl.style.top = `${evt.pageY - this.ghostEl.offsetHeight / 2}px`;
+
       });
 
       item.addEventListener('mousemove', (evt) => {
@@ -166,6 +174,12 @@ export default class TasksListWidget {
 
   onClickAddItem(e) {
     e.preventDefault();
-    console.dir(e)
+    console.log(e.target, e.currentTarget)
+    const cardDiv = document.querySelector(TasksListWidget.cardDivSelector);
+    console.log(cardDiv);
+    if (cardDiv && cardDiv.classList.contains('hidden')) {
+      cardDiv.classList.remove('hidden');
+    }
+    e.target.classList.add('hidden')
   }
 }
