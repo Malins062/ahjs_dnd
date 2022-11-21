@@ -63,21 +63,87 @@ export default class TasksListWidget {
   
   bindToDOM() {
     this.parentEl.innerHTML = this.markup;
+    this.draggedEl = null;
+    this.ghostEl = null;
+    this.initEvents();
+  }
 
+  initEvents(){
     const button = this.parentEl.querySelector(TasksListWidget.addItemSelector);
-    button.addEventListener('click', e => this.onClick(e));
+    button.addEventListener('click', e => this.onClickAddItem(e));
 
     const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach(item => {
-      console.log(item);
+      // console.log(item);
 
       const closeButton = item.querySelector(TasksListWidget.delItemSelector);
-      console.log(closeButton);
+      // console.log(closeButton);
 
       closeButton.addEventListener('click', () => {
         item.remove();
       });
 
+      item.addEventListener('mousedown', (evt) => {
+        evt.preventDefault();
+        console.log(evt.target, evt.currentTarget);
+        if (!evt.currentTarget.classList.contains('tasklist-item')) {
+          return;
+        }
+
+        this.draggedEl = evt.currentTarget;
+        this.ghostEl = evt.currentTarget.cloneNode(true);
+        this.ghostEl.classList.add('dragged');
+        document.body.appendChild(this.ghostEl);
+        this.ghostEl.style.left = `${evt.pageX - this.ghostEl.offsetWidth / 2}px`;
+        this.ghostEl.style.top = `${evt.pageY - this.ghostEl.offsetHeight / 2}px`;
+      });
+
+      item.addEventListener('mousemove', (evt) => {
+        evt.preventDefault();
+        if (!this.draggedEl) {
+          return;
+        }
+      
+        const closest = document.elementFromPoint(evt.clientX, evt.clientY);
+        console.log(closest.textContent);
+        const { top } = closest.getBoundingClientRect();
+        console.log(evt.pageY);
+        console.log(window.scrollY + top + closest.offsetHeight / 2);
+      
+        this.ghostEl.style.left = `${evt.pageX - this.ghostEl.offsetWidth / 2}px`;
+        this.ghostEl.style.top = `${evt.pageY - this.ghostEl.offsetHeight / 2}px`;
+      });
+
+      item.addEventListener('mouseleave', () => {
+        if (!this.draggedEl) {
+          return;
+        }
+        document.body.removeChild(this.ghostEl);
+        this.ghostEl = null;
+        this.draggedEl = null;
+      });
+      
+      item.addEventListener('mouseup', (evt) => {
+        if (!this.draggedEl) {
+          return;
+        }
+        const closest = document.elementFromPoint(evt.clientX, evt.clientY);
+      
+        const { top } = closest.getBoundingClientRect();
+        console.log(window.scrollY + top + closest.offsetHeight / 2);
+        if (evt.pageY > window.scrollY + top + closest.offsetHeight / 2) {
+          evt.currentTarget.insertBefore(this.draggedEl, closest.nextElementSibling);
+        } else {
+          evt.currentTarget.insertBefore(this.draggedEl, closest);
+        }
+      
+        console.log(evt.offsetY);
+      
+        document.body.removeChild(this.ghostEl);
+        this.ghostEl = null;
+        this.draggedEl = null;
+      });
+            
       item.addEventListener('mouseover', (evt) => {
         evt.preventDefault();
         if (closeButton.classList.contains('hidden')) {
@@ -98,7 +164,7 @@ export default class TasksListWidget {
     });
   }
 
-  onClick(e) {
+  onClickAddItem(e) {
     e.preventDefault();
     console.dir(e)
   }

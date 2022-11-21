@@ -12,6 +12,15 @@
   cursor: pointer;
 }
 
+.tasklist-item.dragged {
+  border-radius: 10px;
+  position: absolute;
+  z-index: 999;
+  pointer-events: none;
+  background: #fff;
+  cursor: grab;
+}
+
 .taskslist-item-close {
   position: absolute;  
   top: calc(0% + 0.2rem);
