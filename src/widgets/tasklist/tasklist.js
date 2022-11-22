@@ -1,4 +1,5 @@
 import './tasklist.css';
+import { v4 as uuidv4 } from 'uuid';
 
 /*
 class TasksListWidget
@@ -23,6 +24,12 @@ export default class TasksListWidget {
   constructor(parentEl, tasksList) {
     this.parentEl = parentEl;
     this.tasksList = tasksList;
+
+    // Добавление уникальных номеров для каждого списка
+    this.tasksList.forEach((list) => {
+      list["id"] = uuidv4();
+    });
+    console.log(this.tasksList);
   }
 
   static tasksListHTML(tasksList) {
@@ -40,7 +47,7 @@ export default class TasksListWidget {
 
     return `
       <div class="col-md-4 h-100 py-2">        
-        <div class="taskslist card">
+        <div class="taskslist card" id="card-${tasksList.id}>
             <div class="taskslist-header card-header p-2">
                 <h5 class="taskslist-header-title mb-0">${tasksList.title}</h5>
             </div>
@@ -54,8 +61,13 @@ export default class TasksListWidget {
             <div class="taskslist-footer card-footer text-start p-2">
                 <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
                 <div class="taskslist-items-card hidden">
-                  <button class="btn btn-success btn-sm" id="tasklist-add">Добавить</button>
-                  <div class="taskslist-items-card-close">&#10005;<div>
+                  <div class="form-outline mb-2">
+                    <textarea class="new-item form-control" rows="2" placeholder="Введите текст карточки"></textarea>
+                  </div>
+                  <div>
+                    <button class="add-new-item btn btn-success btn-sm">Добавить</button>
+                    <div class="close-new-item taskslist-items-card-close">&#10005;<div>
+                  </div>
                 </div>
             </div>
         </div>
@@ -65,7 +77,7 @@ export default class TasksListWidget {
 
   bindToDOM() {
     this.parentEl.innerHTML = '';
-    this.tasksList.forEach((tasksList) => {
+    this.tasksList.forEach((tasksList) => {      
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
     // this.draggedEl = undefined;
@@ -96,18 +108,18 @@ export default class TasksListWidget {
     const buttonAddCard = this.parentEl.querySelector(TasksListWidget.addItemSelector);
     buttonAddCard.addEventListener('click', (evt) => this.onClickAddItem(evt));
 
-    const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
-    taskslistItems.addEventListener('mousedown', (evt) => {
-      evt.preventDefault();
-      console.log(evt.target, evt.currentTarget);
-      if (!evt.currentTarget.classList.contains('taskslist-item')) {
-        return;
-      }
+    // const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
+    // taskslistItems.addEventListener('mousedown', (evt) => {
+    //   evt.preventDefault();
+    //   console.log(evt.target, evt.currentTarget);
+    //   if (!evt.currentTarget.classList.contains('taskslist-item')) {
+    //     return;
+    //   }
 
-      this.draggedEl = evt.currentTarget;
-      this.draggedEl.classList.add('dragged');
-      console.log(this.draggedEl);
-    });
+    //   this.draggedEl = evt.currentTarget;
+    //   this.draggedEl.classList.add('dragged');
+    //   console.log(this.draggedEl);
+    // });
 
     const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
