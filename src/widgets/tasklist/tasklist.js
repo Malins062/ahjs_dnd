@@ -1,22 +1,31 @@
 import './tasklist.css';
 
 /*
-class TaskListWidget
+class TasksListWidget
 
   Параметры конструктора:
     parentEl - контейнер
-    title - название подсказки
-    items - список инициализированных задач (array)
+    tasksList - первоначальный список задач = [
+      {
+        title: "Наименование списка 1",
+        items: ['Задание 1', 'Задание 2', ...]
+      },
+
+      {
+        title: "Наименование списка 2",
+        items: ['Задание 1', 'Задание 2', ...]
+      },
+
+      ...
+    ]
 */
 export default class TasksListWidget {
-  constructor(parentEl, title, items) {
+  constructor(parentEl, tasksList) {
     this.parentEl = parentEl;
-    this.title = title;
-    this.items = items;
-    // console.log(parentEl, title, items);
+    this.tasksList = tasksList;
   }
 
-  get markup() {
+  static tasksListHTML(tasksList) {
     const itemsHTML = (items) => {
       let html = '';
       items.forEach((taskText) => {
@@ -30,26 +39,37 @@ export default class TasksListWidget {
     };
 
     return `
-      <div class="taskslist card">
-          <div class="taskslist-header card-header p-2">
-              <h5 class="taskslist-header-title mb-0">${this.title}</h5>
-          </div>
+      <div class="col-md-4 h-100 py-2">        
+        <div class="taskslist card">
+            <div class="taskslist-header card-header p-2">
+                <h5 class="taskslist-header-title mb-0">${tasksList.title}</h5>
+            </div>
 
-          <div class="taskslist-body card-body h-100 p-2" data-mdb-perfect-scrollbar="true">
-              <ul class="taskslist-items list-group">
-                  ${itemsHTML(this.items)}
-              </ul>
-          </div>
+            <div class="taskslist-body card-body h-100 p-2" data-mdb-perfect-scrollbar="true">
+                <ul class="taskslist-items list-group">
+                    ${itemsHTML(tasksList.items)}
+                </ul>
+            </div>
 
-          <div class="taskslist-footer card-footer text-start p-2">
-              <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
-              <div class="taskslist-items-card hidden">
-                <button class="btn btn-success btn-sm" id="tasklist-add">Добавить</button>
-                <div class="taskslist-items-card-close">&#10005;<div>
-              </div>
-          </div>
+            <div class="taskslist-footer card-footer text-start p-2">
+                <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
+                <div class="taskslist-items-card hidden">
+                  <button class="btn btn-success btn-sm" id="tasklist-add">Добавить</button>
+                  <div class="taskslist-items-card-close">&#10005;<div>
+                </div>
+            </div>
+        </div>
       </div>
     `;
+  }
+
+  bindToDOM() {
+    this.parentEl.innerHTML = '';
+    this.tasksList.forEach((tasksList) => {
+      this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
+    });
+    // this.draggedEl = undefined;
+    this.initEvents();
   }
 
   static get addItemSelector() {
@@ -70,12 +90,6 @@ export default class TasksListWidget {
 
   static get cardDivSelector() {
     return '.taskslist-items-card';
-  }
-
-  bindToDOM() {
-    this.parentEl.innerHTML = this.markup;
-    this.draggedEl = undefined;
-    this.initEvents();
   }
 
   initEvents() {
