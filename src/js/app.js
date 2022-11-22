@@ -1,4 +1,4 @@
-import TasksListWidget from '../widgets/tasklist/tasklist';
+import TasksListWidget from '../widgets/taskslist/taskslist';
 
 const tasksList = [
   {

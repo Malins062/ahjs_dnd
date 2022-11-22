@@ -1,4 +1,4 @@
-import './tasklist.css';
+import './taskslist.css';
 import { v4 as uuidv4 } from 'uuid';
 
 /*
@@ -26,10 +26,8 @@ export default class TasksListWidget {
     this.tasksList = tasksList;
 
     // Добавление уникальных номеров для каждого списка
-    this.tasksList.forEach((list) => {
-      list["id"] = uuidv4();
-    });
-    console.log(this.tasksList);
+    this.tasksList.forEach((list) => list.id = uuidv4());
+    // console.log(this.tasksList);
   }
 
   static tasksListHTML(tasksList) {
@@ -47,7 +45,7 @@ export default class TasksListWidget {
 
     return `
       <div class="col-md-4 h-100 py-2">        
-        <div class="taskslist card" id="card-${tasksList.id}">
+        <div class="taskslist card" id="taskslist-${tasksList.id}">
             <div class="taskslist-header card-header p-2">
                 <h5 class="taskslist-header-title mb-0">${tasksList.title}</h5>
             </div>
@@ -75,11 +73,15 @@ export default class TasksListWidget {
 
   bindToDOM() {
     this.parentEl.innerHTML = '';
-    this.tasksList.forEach((tasksList) => {      
+    this.tasksList.forEach((tasksList) => {
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
-    // this.draggedEl = undefined;
+
     this.initEvents();
+  }
+
+  static get tasksListIDSelector() {
+    return '[id=taskslist-';
   }
 
   static get addItemSelector() {
@@ -103,8 +105,14 @@ export default class TasksListWidget {
   }
 
   initEvents() {
-    const buttonAddCard = this.parentEl.querySelector(TasksListWidget.addItemSelector);
-    buttonAddCard.addEventListener('click', (evt) => this.onClickAddItem(evt));
+    this.tasksList.forEach((list) => {
+      const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${list.id}]`);
+      const addCardButton = tasksList.querySelector(TasksListWidget.addItemSelector);
+      const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
+
+      console.log(tasksList, addCardButton);
+      addCardButton.addEventListener('click', (evt) => this.onClickAddCard(evt, list.id, cardDiv));
+    })
 
     // const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
     // taskslistItems.addEventListener('mousedown', (evt) => {
@@ -149,10 +157,9 @@ export default class TasksListWidget {
     });
   }
 
-  onClickAddItem(evt) {
+  onClickAddCard(evt, id, cardDiv) {
     evt.preventDefault();
-    console.log(evt.target, evt.currentTarget);
-    const cardDiv = document.querySelector(TasksListWidget.cardDivSelector);
+    console.log(evt.target, evt.currentTarget, id);
     console.log(cardDiv);
     if (cardDiv && cardDiv.classList.contains('hidden')) {
       cardDiv.classList.remove('hidden');
