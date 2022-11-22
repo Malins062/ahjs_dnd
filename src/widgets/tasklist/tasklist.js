@@ -47,7 +47,7 @@ export default class TasksListWidget {
 
     return `
       <div class="col-md-4 h-100 py-2">        
-        <div class="taskslist card" id="card-${tasksList.id}>
+        <div class="taskslist card" id="card-${tasksList.id}">
             <div class="taskslist-header card-header p-2">
                 <h5 class="taskslist-header-title mb-0">${tasksList.title}</h5>
             </div>
@@ -64,10 +64,8 @@ export default class TasksListWidget {
                   <div class="form-outline mb-2">
                     <textarea class="new-item form-control" rows="2" placeholder="Введите текст карточки"></textarea>
                   </div>
-                  <div>
-                    <button class="add-new-item btn btn-success btn-sm">Добавить</button>
-                    <div class="close-new-item taskslist-items-card-close">&#10005;<div>
-                  </div>
+                  <button class="add-new-item btn btn-success btn-sm">Добавить</button>
+                  <button class="close-new-item btn btn-transparent btn-sm">&#10005;</button>
                 </div>
             </div>
         </div>
