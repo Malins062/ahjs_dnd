@@ -29,9 +29,10 @@
   font-weight: bold;
 }
 
+.taskslist-new-item-close:hover,
 .taskslist-item-close:hover {
   color: red;
-  font-size: x-small;
+  font-weight: bolder;
 }
 
 .list-group {
