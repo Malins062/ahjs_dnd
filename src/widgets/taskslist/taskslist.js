@@ -198,7 +198,7 @@ export default class TasksListWidget {
 
       item.addEventListener('mousedown', (evt) => {
         evt.preventDefault();
-        // console.log(evt.target, evt.currentTarget);
+        console.log('mousedown', evt.target, evt.currentTarget);
         if (evt.target.classList.contains('taskslist-item-close') || 
           !evt.currentTarget.classList.contains('taskslist-item')) {
           return;
@@ -207,19 +207,17 @@ export default class TasksListWidget {
         this.draggedItem = evt.currentTarget;
         this.draggedItem.classList.add('dragged');
 
-        // this.draggedItem.addEventListener('mouseup', this.onMouseUp(evt));
+        this.draggedItem.addEventListener('mouseup', this.onMouseUp(evt));
       });
 
       item.addEventListener('mouseup', (evt) => {
-        evt.preventDefault();
-        console.log(evt.target, evt.currentTarget);
       });
     });
   }
 
   onMouseUp(evt) {
     // evt.preventDefault();
-    console.log(this.draggedItem);
+    console.log('mouseup', evt.target, evt.currentTarget, this.draggedItem);
     if (!this.draggedItem) {
       return;
     }
