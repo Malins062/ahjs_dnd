@@ -12,13 +12,21 @@
   cursor: pointer;
 }
 
-.tasklist-item.dragged {
-  border-radius: 10px;
-  position: absolute;
+.taskslist-item.dragged {
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgb(247, 68, 68); /* Параметры тени */
+  padding: 10px;
+
+  /* position: absolute; */
   z-index: 999;
   pointer-events: none;
-  background: #fff;
+  background: rgb(195, 195, 195);
   cursor: grab;
+
+  transform: rotate(-2deg);
+  -webkit-transform: rotate(-2deg);
+  -o-transform: rotate(-2deg);
+  -moz-transform: rotate(-2deg);
 }
 
 .taskslist-item-close {

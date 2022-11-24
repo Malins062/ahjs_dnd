@@ -24,6 +24,7 @@ export default class TasksListWidget {
   constructor(parentEl, tasksList) {
     this.parentEl = parentEl;
     this.tasksList = tasksList;
+    this.draggedItem = undefined;
 
     // Добавление уникальных номеров для каждого списка
     this.tasksList.forEach((list) => list.id = uuidv4());
@@ -174,8 +175,6 @@ export default class TasksListWidget {
       // console.log(item);
 
       const closeButton = item.querySelector(TasksListWidget.delItemSelector);
-      // console.log(closeButton);
-
       closeButton.addEventListener('click', () => {
         item.remove();
       });
@@ -196,8 +195,34 @@ export default class TasksListWidget {
           }
         });
       });
+
+      item.addEventListener('mousedown', (evt) => {
+        evt.preventDefault();
+        console.log(evt.target, evt.currentTarget);
+        if (evt.target.classList.contains('taskslist-item-close') || 
+          !evt.currentTarget.classList.contains('taskslist-item')) {
+          return;
+        }
+
+        this.draggedItem = evt.currentTarget;
+        this.draggedItem.classList.add('dragged');
+
+        // this.draggedItem.addEventListener('mouseup', this.onMouseUp(evt));
+      });
     });
   }
+
+  onMouseUp(evt) {
+    // evt.preventDefault();
+    console.log(this.draggedItem);
+    if (!this.draggedItem) {
+      return;
+    }
+
+    this.draggedItem.classList.remove('dragged');
+    this.draggedItem = undefined;
+  };
+
 }
 
 
