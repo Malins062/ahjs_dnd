@@ -114,34 +114,32 @@ export default class TasksListWidget {
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
 
-    this.initAddItemsEvents();
-    this.initItemsEvents();
-  }
-
-  initAddItemsEvents() {
     this.tasksList.forEach((list) => {
-      const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${list.id}]`);
-      const ul = tasksList.querySelector('ul');
-      const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
-      const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
-      const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
-      const closeCard = tasksList.querySelector(TasksListWidget.closeCardSelector);
-
-      console.log(tasksList, addCard, cardDiv, addCard, closeCard);
-      showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
-      addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul));
-      closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
+      this.initAddItemEvents(list.id);
+      this.initItemEvents(list.id);
     });
   }
 
+  initAddItemEvents(id) {
+    const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${id}]`);
+    const ul = tasksList.querySelector('ul');
+    const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
+    const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
+    const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
+    const closeCard = tasksList.querySelector(TasksListWidget.closeCardSelector);
+
+    showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
+    addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul, id));
+    closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
+  }
+
   // Добавление новой задачи
-  onClickAddCard(evt, cardDiv, ul) {
+  onClickAddCard(evt, cardDiv, ul, id) {
     evt.preventDefault();
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
-    console.log(textItem.value);
     if (textItem.value.trim().length > 0) {
       ul.innerHTML += TasksListWidget.itemsHTML([textItem.value]);
-      this.initItemsEvents();
+      this.initItemEvents(id);
     }
     textItem.value = '';
   }
@@ -165,8 +163,9 @@ export default class TasksListWidget {
   }
 
 
-  initItemsEvents() {
-    const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
+  initItemEvents(id) {
+    const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${id}]`);
+    const items = tasksList.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
       // console.log(item);
 
