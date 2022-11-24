@@ -198,7 +198,7 @@ export default class TasksListWidget {
 
       item.addEventListener('mousedown', (evt) => {
         evt.preventDefault();
-        console.log(evt.target, evt.currentTarget);
+        // console.log(evt.target, evt.currentTarget);
         if (evt.target.classList.contains('taskslist-item-close') || 
           !evt.currentTarget.classList.contains('taskslist-item')) {
           return;
@@ -208,6 +208,11 @@ export default class TasksListWidget {
         this.draggedItem.classList.add('dragged');
 
         // this.draggedItem.addEventListener('mouseup', this.onMouseUp(evt));
+      });
+
+      item.addEventListener('mouseup', (evt) => {
+        evt.preventDefault();
+        console.log(evt.target, evt.currentTarget);
       });
     });
   }
