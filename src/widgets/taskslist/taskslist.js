@@ -30,19 +30,19 @@ export default class TasksListWidget {
     // console.log(this.tasksList);
   }
 
-  static tasksListHTML(tasksList) {
-    const itemsHTML = (items) => {
-      let html = '';
-      items.forEach((taskText) => {
-        html
-          += `<li class="taskslist-item list-group-item mb-2">
-            <div class="taskslist-item-text">${taskText}</div>
-            <div class="taskslist-item-close hidden">&#10005;</div>
-          </li>`;
-      });
-      return html;
-    };
+  static itemsHTML(items) {
+    let html = '';
+    items.forEach((taskText) => {
+      html += 
+        `<li class="taskslist-item list-group-item mb-2">
+          <div class="taskslist-item-text">${taskText}</div>
+          <div class="taskslist-item-close hidden">&#10005;</div>
+        </li>`;
+    });
+    return html;
+  };
 
+  static tasksListHTML(tasksList) {
     return `
       <div class="col-md-4 h-100 py-2">        
         <div class="taskslist card" id="taskslist-${tasksList.id}">
@@ -52,7 +52,7 @@ export default class TasksListWidget {
 
             <div class="taskslist-body card-body h-100 p-2" data-mdb-perfect-scrollbar="true">
                 <ul class="taskslist-items list-group">
-                    ${itemsHTML(tasksList.items)}
+                    ${TasksListWidget.itemsHTML(tasksList.items)}
                 </ul>
             </div>
 
@@ -60,7 +60,8 @@ export default class TasksListWidget {
                 <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
                 <div class="taskslist-items-card hidden">
                   <div class="form-outline mb-2">
-                    <textarea class="new-item form-control" rows="2" placeholder="Введите текст карточки"></textarea>
+                    <textarea class="new-item form-control" rows="2" 
+                      placeholder="Введите текст карточки"></textarea>
                   </div>
                   <button class="taskslist-new-item-add btn btn-success btn-sm">Добавить</button>
                   <button class="taskslist-new-item-close btn btn-transparent btn-sm">&#10005;</button>
@@ -69,15 +70,6 @@ export default class TasksListWidget {
         </div>
       </div>
     `;
-  }
-
-  bindToDOM() {
-    this.parentEl.innerHTML = '';
-    this.tasksList.forEach((tasksList) => {
-      this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
-    });
-
-    this.initEvents();
   }
 
   static get tasksListIDSelector() {
@@ -112,9 +104,24 @@ export default class TasksListWidget {
     return '.taskslist-items-card';
   }
 
-  initEvents() {
+  static get textNewItemSelector() {
+    return '.new-item';
+  }
+
+  bindToDOM() {
+    this.parentEl.innerHTML = '';
+    this.tasksList.forEach((tasksList) => {
+      this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
+    });
+
+    this.initAddItemsEvents();
+    this.initItemsEvents();
+  }
+
+  initAddItemsEvents() {
     this.tasksList.forEach((list) => {
       const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${list.id}]`);
+      const ul = tasksList.querySelector('ul');
       const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
       const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
       const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
@@ -122,22 +129,43 @@ export default class TasksListWidget {
 
       console.log(tasksList, addCard, cardDiv, addCard, closeCard);
       showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
+      addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul));
       closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
     });
+  }
 
-    // const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
-    // taskslistItems.addEventListener('mousedown', (evt) => {
-    //   evt.preventDefault();
-    //   console.log(evt.target, evt.currentTarget);
-    //   if (!evt.currentTarget.classList.contains('taskslist-item')) {
-    //     return;
-    //   }
+  // Добавление новой задачи
+  onClickAddCard(evt, cardDiv, ul) {
+    evt.preventDefault();
+    const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
+    console.log(textItem.value);
+    if (textItem.value.trim().length > 0) {
+      ul.innerHTML += TasksListWidget.itemsHTML([textItem.value]);
+      this.initItemsEvents();
+    }
+    textItem.value = '';
+  }
 
-    //   this.draggedEl = evt.currentTarget;
-    //   this.draggedEl.classList.add('dragged');
-    //   console.log(this.draggedEl);
-    // });
+  // Показать карточку добавления новой задачи
+  onClickShowCard(evt, cardDiv) {
+    evt.preventDefault();
+    if (cardDiv && cardDiv.classList.contains('hidden')) {
+      cardDiv.classList.remove('hidden');
+    }
+    evt.target.classList.add('hidden');
+  }
 
+  // Закрыть карточку добавления новой задачи
+  onClickCloseCard(evt, cardDiv, showCard) {
+    evt.preventDefault();
+    if (showCard && showCard.classList.contains('hidden')) {
+      showCard.classList.remove('hidden');
+    }
+    cardDiv.classList.add('hidden');
+  }
+
+
+  initItemsEvents() {
     const items = this.parentEl.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
       // console.log(item);
@@ -167,20 +195,18 @@ export default class TasksListWidget {
       });
     });
   }
-
-  onClickShowCard(evt, cardDiv) {
-    evt.preventDefault();
-    if (cardDiv && cardDiv.classList.contains('hidden')) {
-      cardDiv.classList.remove('hidden');
-    }
-    evt.target.classList.add('hidden');
-  }
-
-  onClickCloseCard(evt, cardDiv, showCard) {
-    evt.preventDefault();
-    if (showCard && showCard.classList.contains('hidden')) {
-      showCard.classList.remove('hidden');
-    }
-    cardDiv.classList.add('hidden');
-  }
 }
+
+
+    // const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
+    // taskslistItems.addEventListener('mousedown', (evt) => {
+    //   evt.preventDefault();
+    //   console.log(evt.target, evt.currentTarget);
+    //   if (!evt.currentTarget.classList.contains('taskslist-item')) {
+    //     return;
+    //   }
+
+    //   this.draggedEl = evt.currentTarget;
+    //   this.draggedEl.classList.add('dragged');
+    //   console.log(this.draggedEl);
+    // });
