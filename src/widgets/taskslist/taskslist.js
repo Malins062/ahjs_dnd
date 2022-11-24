@@ -36,7 +36,7 @@ export default class TasksListWidget {
       html += 
         `<li class="taskslist-item list-group-item mb-2">
           <div class="taskslist-item-text">${taskText}</div>
-          <div class="taskslist-item-close hidden">&#10005;</div>
+          <div class="taskslist-item-close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
     });
     return html;
@@ -63,8 +63,12 @@ export default class TasksListWidget {
                     <textarea class="new-item form-control" rows="2" 
                       placeholder="Введите текст карточки"></textarea>
                   </div>
-                  <button class="taskslist-new-item-add btn btn-success btn-sm">Добавить</button>
-                  <button class="taskslist-new-item-close btn btn-transparent btn-sm">&#10005;</button>
+                  <button class="taskslist-new-item-add btn btn-success btn-sm" title="Добавить новую задачу">
+                    Добавить
+                  </button>
+                  <button class="taskslist-new-item-close btn btn-transparent btn-sm" title="Закрыть окно добавления">
+                    &#10005;
+                  </button>
                 </div>
             </div>
         </div>
