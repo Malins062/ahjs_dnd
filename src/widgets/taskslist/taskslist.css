@@ -6,10 +6,14 @@
   background-color: #dee2e6 !important;
 }
 
-.taskslist-items-add,
-.taskslist-item {
+.taskslist-items-add {
   user-select: none;
   cursor: pointer;
+}
+
+.taskslist-item {
+  user-select: none;
+  cursor: grab !important; 
 }
 
 .taskslist-item.dragged {
@@ -17,16 +21,21 @@
   box-shadow: 0 0 10px rgb(247, 68, 68); /* Параметры тени */
   padding: 10px;
 
-  /* position: absolute; */
+  position: absolute;
   z-index: 999;
   pointer-events: none;
   background: rgb(195, 195, 195);
-  cursor: grab;
+  cursor: grabbing !important;
 
   transform: rotate(-2deg);
   -webkit-transform: rotate(-2deg);
   -o-transform: rotate(-2deg);
   -moz-transform: rotate(-2deg);
+}
+
+.taskslist-item.selected {
+  opacity: 0.6;
+  cursor: grabbing;
 }
 
 .taskslist-item-close {
@@ -35,6 +44,7 @@
   left: calc(100% - 0.8rem);
   font-size: xx-small;
   font-weight: bold;
+  cursor: pointer;
 }
 
 .taskslist-new-item-close:hover,
