@@ -259,7 +259,7 @@ export default class TasksListWidget {
 
     this.draggedItem.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
-      this.draggedItem.onmouseup = null;
+      this.draggedItem.removeEventListener('mouseup');
     });
 
     this.draggedItem.addEventListener('dragstart', () => {
