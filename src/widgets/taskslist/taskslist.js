@@ -35,7 +35,7 @@ export default class TasksListWidget {
     let html = '';
     items.forEach((taskText) => {
       html += 
-        `<li class="list-group-item mb-2 taskslist-item " draggable="true">
+        `<li class="taskslist-item list-group-item mb-2">
           <div class="taskslist-item-text">${taskText}</div>
           <div class="taskslist-item-close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
@@ -124,13 +124,6 @@ export default class TasksListWidget {
       this.initItemEvents(list.id);
     });
 
-    document.addEventListener('mousemove', (evt) => this.onMouseMove(evt));
-
-    this.draggedItem.onmouseup = function() {
-      document.removeEventListener('mousemove', onMouseMove);
-      this.draggedItem.onmouseup = null;
-    };
-  
   }
 
   initAddItemEvents(id) {
@@ -261,6 +254,18 @@ export default class TasksListWidget {
 
     document.body.append(this.draggedItem);
     this.moveAt(evt.pageX, evt.pageY);
+
+    document.addEventListener('mousemove', (evt) => this.onMouseMove(evt));
+
+    this.draggedItem.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      this.draggedItem.onmouseup = null;
+    });
+
+    this.draggedItem.addEventListener('dragstart', () => {
+      return false;
+    });
+
   }
   
   onMouseMove(evt) {
