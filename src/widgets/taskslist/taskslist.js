@@ -97,6 +97,10 @@ export default class TasksListWidget {
     return 'taskslist-items';
   }
 
+  static get listItemClass() {
+    return 'taskslist-items';
+  }
+
   static get delItemSelector() {
     return '.taskslist-item-close';
   }
@@ -172,15 +176,6 @@ export default class TasksListWidget {
     cardDiv.classList.add('hidden');
   }
 
-  moveAt(pageX, pageY) {
-    if (!this.draggedItem) {
-      return;
-    }
-
-    this.draggedItem.style.left = pageX - this.draggedItem.offsetWidth / 2 + 'px';
-    this.draggedItem.style.top = pageY - this.draggedItem.offsetHeight / 2 + 'px';
-  }
-
   initItemEvents(id) {    
     const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
     
@@ -192,7 +187,7 @@ export default class TasksListWidget {
     });
 
     tasksListItems.addEventListener('drop', (evt) => {
-      console.log('onDrop List', evt);
+      console.log('LIST onDrop', evt);
       const dropList = evt.target;
       if (!dropList.classList.contains(TasksListWidget.listItemsClass)) {
         return;
@@ -233,7 +228,8 @@ export default class TasksListWidget {
       });
 
       item.addEventListener('dragstart', (evt) => {
-        console.log('onDragStart', evt);
+        console.log('ITEM onDragStart', evt);
+        evt.dataTransfer.effectAllowed = "copyMove";
         evt.dataTransfer.setData('text/plain', evt.target.id);
         setTimeout(() => {
           evt.target.classList.add('selected');
@@ -242,80 +238,49 @@ export default class TasksListWidget {
       })
 
       item.addEventListener('drop', (evt) => {
-        console.log('onDrop', evt);
+        console.log('ITEM onDrop', evt);
         evt.preventDefault();
       })
       
-      // item.addEventListener('dragleave', (evt) => {
-      //   console.log('onDragLeave', evt);
-      //   evt.target.classList.remove('selected');
-      //   evt.target.classList.remove('hidden');
-      // });
+      item.addEventListener('dragleave', (evt) => {
+        console.log('ITEM onDragLeave', evt);
+      });
 
       item.addEventListener('dragend', (evt) => {
-        console.log('onDragEnd', evt);
+        console.log('ITEM onDragEnd', evt);
         evt.target.classList.remove('selected');
         evt.target.classList.remove('hidden');
       });
     });
   }
 
-  onMouseDown(evt) {
-    evt.preventDefault();
-    console.log('mousedown', evt.target, evt.currentTarget);
-    if (evt.target.classList.contains('taskslist-item-close') || 
-      !evt.currentTarget.classList.contains('taskslist-item')) {
-      return;
-    }
+  // onMouseDown(evt) {
+  //   evt.preventDefault();
+  //   console.log('mousedown', evt.target, evt.currentTarget);
+  //   if (evt.target.classList.contains('taskslist-item-close') || 
+  //     !evt.currentTarget.classList.contains('taskslist-item')) {
+  //     return;
+  //   }
 
-    this.draggedItem = evt.currentTarget;
-    this.draggedItem.classList.add('dragged');
+  //   this.draggedItem = evt.currentTarget;
+  //   this.draggedItem.classList.add('dragged');
 
-    document.body.append(this.draggedItem);
-    this.moveAt(evt.pageX, evt.pageY);
+  //   document.body.append(this.draggedItem);
+  //   this.moveAt(evt.pageX, evt.pageY);
 
-    document.addEventListener('mousemove', (evt) => this.onMouseMove(evt));
+  //   document.addEventListener('mousemove', (evt) => this.onMouseMove(evt));
 
-    document.addEventListener('mouseup', () => {
-    // this.draggedItem.addEventListener('mouseup', () => {
-      console.log('mouseup');
-      document.removeEventListener('mousemove', this.onMouseMove);
-      this.draggedItem.onmouseup = null;
-      // this.draggedItem.removeEventListener('mouseup');
-    });
+  //   document.addEventListener('mouseup', () => {
+  //   // this.draggedItem.addEventListener('mouseup', () => {
+  //     console.log('mouseup');
+  //     document.removeEventListener('mousemove', this.onMouseMove);
+  //     this.draggedItem.onmouseup = null;
+  //     // this.draggedItem.removeEventListener('mouseup');
+  //   });
 
-    this.draggedItem.addEventListener('dragstart', () => {
-      return false;
-    });
-  }
+  //   this.draggedItem.addEventListener('dragstart', () => {
+  //     return false;
+  //   });
+  // }
   
-  onMouseMove(evt) {
-    this.moveAt(evt.pageX, evt.pageY);
-  }
-
-  onMouseUp(evt) {
-    // evt.preventDefault();
-    console.log('mouseup', evt.target, evt.currentTarget, this.draggedItem);
-    if (!this.draggedItem) {
-      return;
-    }
-
-    this.draggedItem.classList.remove('dragged');
-    this.draggedItem = undefined;
-  };
-
 }
-
-
-    // const taskslistItems = this.parentEl.querySelector(TasksListWidget.itemsSelector);
-    // taskslistItems.addEventListener('mousedown', (evt) => {
-    //   evt.preventDefault();
-    //   console.log(evt.target, evt.currentTarget);
-    //   if (!evt.currentTarget.classList.contains('taskslist-item')) {
-    //     return;
-    //   }
-
-    //   this.draggedEl = evt.currentTarget;
-    //   this.draggedEl.classList.add('dragged');
-    //   console.log(this.draggedEl);
-    // });
