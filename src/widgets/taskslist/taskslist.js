@@ -35,7 +35,7 @@ export default class TasksListWidget {
     let html = '';
     items.forEach((taskText) => {
       html += 
-        `<li class="taskslist-item list-group-item mb-2">
+        `<li class="taskslist-item list-group-item mb-2" draggable="true">
           <div class="taskslist-item-text">${taskText}</div>
           <div class="taskslist-item-close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
@@ -177,8 +177,14 @@ export default class TasksListWidget {
     this.draggedItem.style.top = pageY - this.draggedItem.offsetHeight / 2 + 'px';
   }
 
-  initItemEvents(id) {
+  initItemEvents(id) {    
     const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${id}]`);
+    
+    const tasksListItems = tasksList.querySelector(TasksListWidget.itemsSelector);    
+    tasksListItems.addEventListener('dragover', (evt) => {
+      evt.preventDefault();
+    });
+
     const items = tasksList.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
       // console.log(item);
@@ -205,38 +211,38 @@ export default class TasksListWidget {
         });
       });
 
-      // item.addEventListener('dragstart', (evt) => {
-      //   evt.target.classList.add('selected');
-      //   console.log(evt.target);
-      // })
+      item.addEventListener('dragstart', (evt) => {
+        evt.target.classList.add('selected');
+        console.log(evt.target);
+      })
       
-      // item.addEventListener('dragend', (evt) => {
-      //   evt.target.classList.remove('selected');
-      //   console.log(evt.target);
-      // });
+      item.addEventListener('dragend', (evt) => {
+        evt.target.classList.remove('selected');
+        console.log(evt.target);
+      });
 
       // item.addEventListener('dragover', (evt) => {
       //   evt.preventDefault();
 
-      //   const activeElement = item;
-      //   const currentElement = evt.target;
-      //   const isMoveable = activeElement !== currentElement &&
-      //     currentElement.classList.contains(TasksListWidget.itemSelector);
+        // const activeElement = item;
+        // const currentElement = evt.target;
+        // const isMoveable = activeElement !== currentElement &&
+        //   currentElement.classList.contains(TasksListWidget.itemSelector);
 
-      //   console.log('activeElement', activeElement, 
-      //     'currentElement', currentElement, isMoveable);
-      //   if (!isMoveable) {
-      //     return;
-      //   }
+        // console.log('activeElement', activeElement, 
+        //   'currentElement', currentElement, isMoveable);
+        // if (!isMoveable) {
+        //   return;
+        // }
         
-      //   const nextElement = (currentElement === activeElement.nextElementSibling) ?
-      //     currentElement.nextElementSibling :
-      //     currentElement;          
+        // const nextElement = (currentElement === activeElement.nextElementSibling) ?
+        //   currentElement.nextElementSibling :
+        //   currentElement;          
         
-      //   item.insertBefore(activeElement, nextElement);
+        // item.insertBefore(activeElement, nextElement);
       // });
 
-      item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
+      // item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
 
     });
   }
@@ -257,15 +263,17 @@ export default class TasksListWidget {
 
     document.addEventListener('mousemove', (evt) => this.onMouseMove(evt));
 
-    this.draggedItem.addEventListener('mouseup', () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      this.draggedItem.removeEventListener('mouseup');
+    document.addEventListener('mouseup', () => {
+    // this.draggedItem.addEventListener('mouseup', () => {
+      console.log('mouseup');
+      document.removeEventListener('mousemove', this.onMouseMove);
+      this.draggedItem.onmouseup = null;
+      // this.draggedItem.removeEventListener('mouseup');
     });
 
     this.draggedItem.addEventListener('dragstart', () => {
       return false;
     });
-
   }
   
   onMouseMove(evt) {

@@ -18,24 +18,25 @@
 
 .taskslist-item.dragged {
   border-radius: 5px;
-  box-shadow: 0 0 10px rgb(247, 68, 68); /* Параметры тени */
+  box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
   padding: 10px;
 
   position: absolute;
   z-index: 999;
   pointer-events: none;
-  background: rgb(195, 195, 195);
   cursor: grabbing !important;
 
-  transform: rotate(-2deg);
-  -webkit-transform: rotate(-2deg);
-  -o-transform: rotate(-2deg);
-  -moz-transform: rotate(-2deg);
+  transform: rotate(2deg);
+  -webkit-transform: rotate(2deg);
+  -o-transform: rotate(2deg);
+  -moz-transform: rotate(2deg);
 }
 
 .taskslist-item.selected {
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
   opacity: 0.6;
-  cursor: grabbing;
+  cursor: grabbing !important;
 }
 
 .taskslist-item-close {
