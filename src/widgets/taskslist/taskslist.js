@@ -35,7 +35,7 @@ export default class TasksListWidget {
     let html = '';
     items.forEach((taskText) => {
       html += 
-        `<li class="taskslist-item list-group-item mb-2" draggable="true">
+        `<li class="taskslist-item list-group-item mb-2" id="${uuidv4()}" draggable="true">
           <div class="taskslist-item-text">${taskText}</div>
           <div class="taskslist-item-close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
@@ -185,6 +185,16 @@ export default class TasksListWidget {
       evt.preventDefault();
     });
 
+    tasksListItems.addEventListener('drop', (evt) => {
+      const id = evt.dataTransfer.getData('text');
+      const draggableElement = document.getElementById(id);
+      console.log(id, evt, draggableElement );
+
+      const dropList = evt.target;
+      dropList.appendChild(draggableElement );
+      evt.dataTransfer.clearData();
+    });
+
     const items = tasksList.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
       // console.log(item);
@@ -212,38 +222,25 @@ export default class TasksListWidget {
       });
 
       item.addEventListener('dragstart', (evt) => {
-        evt.target.classList.add('selected');
-        console.log(evt.target);
+        console.log('onDragStart', evt);
+        evt.dataTransfer.setData('text/plain', evt.target.id);
+        setTimeout(() => {
+          evt.target.classList.add('selected');
+          evt.target.classList.add('hidden');
+        }, 0);
       })
       
-      item.addEventListener('dragend', (evt) => {
+      item.addEventListener('dragleave', (evt) => {
+        console.log('onDragLeave', evt);
         evt.target.classList.remove('selected');
-        console.log(evt.target);
+        evt.target.classList.remove('hidden');
       });
 
-      // item.addEventListener('dragover', (evt) => {
-      //   evt.preventDefault();
-
-        // const activeElement = item;
-        // const currentElement = evt.target;
-        // const isMoveable = activeElement !== currentElement &&
-        //   currentElement.classList.contains(TasksListWidget.itemSelector);
-
-        // console.log('activeElement', activeElement, 
-        //   'currentElement', currentElement, isMoveable);
-        // if (!isMoveable) {
-        //   return;
-        // }
-        
-        // const nextElement = (currentElement === activeElement.nextElementSibling) ?
-        //   currentElement.nextElementSibling :
-        //   currentElement;          
-        
-        // item.insertBefore(activeElement, nextElement);
-      // });
-
-      // item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
-
+      item.addEventListener('dragend', (evt) => {
+        console.log('onDragEnd', evt);
+        evt.target.classList.remove('selected');
+        evt.target.classList.remove('hidden');
+      });
     });
   }
 
