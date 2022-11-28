@@ -77,8 +77,8 @@ export default class TasksListWidget {
     `;
   }
 
-  static get tasksListIDSelector() {
-    return '[id=taskslist-';
+  static tasksListIDSelector(id) {
+    return `[id=taskslist-${id}]`;
   }
 
   static get showCardSelector() {
@@ -127,8 +127,8 @@ export default class TasksListWidget {
   }
 
   initAddItemEvents(id) {
-    const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${id}]`);
-    const ul = tasksList.querySelector('ul');
+    const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
+    const ul = tasksList.querySelector(TasksListWidget.itemsSelector);
     const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
     const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
     const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
@@ -178,7 +178,7 @@ export default class TasksListWidget {
   }
 
   initItemEvents(id) {    
-    const tasksList = this.parentEl.querySelector(`${TasksListWidget.tasksListIDSelector}${id}]`);
+    const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
     
     const tasksListItems = tasksList.querySelector(TasksListWidget.itemsSelector);    
     tasksListItems.addEventListener('dragover', (evt) => {
