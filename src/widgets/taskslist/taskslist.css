@@ -6,6 +6,10 @@
   background-color: #dee2e6 !important;
 }
 
+.taskslist-items {
+  min-height: 20px;
+}
+
 .taskslist-items-add {
   user-select: none;
   cursor: pointer;

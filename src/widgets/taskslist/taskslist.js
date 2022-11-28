@@ -89,8 +89,12 @@ export default class TasksListWidget {
     return '.taskslist-item';
   }
 
-  static get itemsSelector() {
+  static get listItemsSelector() {
     return '.taskslist-items';
+  }
+
+  static get listItemsClass() {
+    return 'taskslist-items';
   }
 
   static get delItemSelector() {
@@ -128,7 +132,7 @@ export default class TasksListWidget {
 
   initAddItemEvents(id) {
     const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
-    const ul = tasksList.querySelector(TasksListWidget.itemsSelector);
+    const ul = tasksList.querySelector(TasksListWidget.listItemsSelector);
     const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
     const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
     const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
@@ -180,22 +184,29 @@ export default class TasksListWidget {
   initItemEvents(id) {    
     const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
     
-    const tasksListItems = tasksList.querySelector(TasksListWidget.itemsSelector);    
+    const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
+
+    console.log(tasksList, tasksListItems);
     tasksListItems.addEventListener('dragover', (evt) => {
       evt.preventDefault();
     });
 
     tasksListItems.addEventListener('drop', (evt) => {
+      console.log('onDrop List', evt);
+      const dropList = evt.target;
+      if (!dropList.classList.contains(TasksListWidget.listItemsClass)) {
+        return;
+      }
+
       const id = evt.dataTransfer.getData('text');
       const draggableElement = document.getElementById(id);
       console.log(id, evt, draggableElement );
 
-      const dropList = evt.target;
       dropList.appendChild(draggableElement );
       evt.dataTransfer.clearData();
     });
 
-    const items = tasksList.querySelectorAll(TasksListWidget.itemSelector);
+    const items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
       // console.log(item);
 
@@ -229,12 +240,17 @@ export default class TasksListWidget {
           evt.target.classList.add('hidden');
         }, 0);
       })
+
+      item.addEventListener('drop', (evt) => {
+        console.log('onDrop', evt);
+        evt.preventDefault();
+      })
       
-      item.addEventListener('dragleave', (evt) => {
-        console.log('onDragLeave', evt);
-        evt.target.classList.remove('selected');
-        evt.target.classList.remove('hidden');
-      });
+      // item.addEventListener('dragleave', (evt) => {
+      //   console.log('onDragLeave', evt);
+      //   evt.target.classList.remove('selected');
+      //   evt.target.classList.remove('hidden');
+      // });
 
       item.addEventListener('dragend', (evt) => {
         console.log('onDragEnd', evt);
