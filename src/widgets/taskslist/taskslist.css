@@ -10,12 +10,8 @@
 
 .tasks__list {
   list-style-type: none;    
-}
-
-.tasks__items {
   min-height: 20px;
 }
-
 
 .item__add {
   cursor: pointer;

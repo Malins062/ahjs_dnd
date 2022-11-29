@@ -89,6 +89,10 @@ export default class TasksListWidget {
     return '.tasks__item';
   }
 
+  static get itemClass() {
+    return 'tasks__item';
+  }
+
   static get listItemsSelector() {
     return '.tasks__list';
   }
@@ -97,12 +101,12 @@ export default class TasksListWidget {
     return 'tasks__list';
   }
 
-  static get listItemClass() {
-    return 'tasks__item';
-  }
-
   static get delItemSelector() {
     return '.item__close';
+  }
+
+  static get delItemClass() {
+    return 'item__close';
   }
 
   static get closeCardSelector() {
@@ -127,14 +131,18 @@ export default class TasksListWidget {
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
 
+    // document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
+    // document.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
+    // document.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
+
     this.tasksList.forEach((list) => {
-      this.initAddItemEvents(list.id);
+      this.initListEvents(list.id);
       this.initItemEvents(list.id);
     });
 
   }
 
-  initAddItemEvents(id) {
+  initListEvents(id) {
     const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
     const ul = tasksList.querySelector(TasksListWidget.listItemsSelector);
     const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
@@ -144,6 +152,8 @@ export default class TasksListWidget {
 
     ul.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
     ul.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
+    ul.addEventListener('dragover', (evt) => this.onListDragOver(evt));
+    
     showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
     addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul, id));
     closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
@@ -151,14 +161,36 @@ export default class TasksListWidget {
 
   onListDragStart(evt) {
     console.log('onListDragStart', evt.target);
-    evt.target.classList.add('selected');
-    evt.target.classList.add('hidden');
+    setTimeout(() => {
+      evt.target.classList.add('selected');
+      evt.target.classList.add('hidden');
+    }, 0);
   }
 
   onListDragEnd(evt) {
     console.log('onListDragEnd', evt.target);
     evt.target.classList.remove('selected');
     evt.target.classList.remove('hidden');
+  }
+
+  onListDragOver(evt) {
+    evt.preventDefault();
+  
+    const activeElement = document.querySelector(`.selected`);
+    const currentElement = evt.target;
+    const isMoveable = activeElement !== currentElement &&
+      currentElement.classList.contains(TasksListWidget.itemClass);
+       
+    if (!isMoveable) {
+      return;
+    }
+
+    const nextElement = (currentElement === activeElement.nextElementSibling) ?
+		  currentElement.nextElementSibling :
+		  currentElement;
+    
+    console.log('onListDragOver', evt.target, nextElement, activeElement);
+    evt.target.insertBefore(activeElement, nextElement);
   }
 
     // Добавление новой задачи
