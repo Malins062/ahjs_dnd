@@ -6,21 +6,36 @@
   background-color: #dee2e6 !important;
 }
 
-.taskslist-items {
+.tasks__items {
   min-height: 20px;
 }
 
-.taskslist-items-add {
+.item__add {
   user-select: none;
   cursor: pointer;
 }
 
-.taskslist-item {
+.item__close {
+  position: absolute;  
+  top: calc(0% + 0.2rem);
+  left: calc(100% - 0.8rem);
+  font-size: xx-small;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.new__item__close:hover,
+.item__close:hover {
+  color: red;
+  font-weight: bolder;
+}
+
+.tasks__item {
   user-select: none;
   cursor: grab !important; 
 }
 
-.taskslist-item.dragged {
+.tasks__item.dragged {
   border-radius: 5px;
   box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
   padding: 10px;
@@ -36,26 +51,11 @@
   -moz-transform: rotate(2deg);
 }
 
-.taskslist-item.selected {
+.tasks__item.selected {
   border-radius: 5px;
   box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
   opacity: 0.6;
   cursor: grabbing !important;
-}
-
-.taskslist-item-close {
-  position: absolute;  
-  top: calc(0% + 0.2rem);
-  left: calc(100% - 0.8rem);
-  font-size: xx-small;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.taskslist-new-item-close:hover,
-.taskslist-item-close:hover {
-  color: red;
-  font-weight: bolder;
 }
 
 .list-group {

@@ -35,9 +35,9 @@ export default class TasksListWidget {
     let html = '';
     items.forEach((taskText) => {
       html += 
-        `<li class="taskslist-item list-group-item mb-2" id="${uuidv4()}" draggable="true">
-          <div class="taskslist-item-text">${taskText}</div>
-          <div class="taskslist-item-close hidden" title="Удалить задачу">&#10005;</div>
+        `<li class="tasks__item list-group-item mb-2" id="${uuidv4()}" draggable="true">
+          <div class="item__text">${taskText}</div>
+          <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
     });
     return html;
@@ -46,28 +46,28 @@ export default class TasksListWidget {
   static tasksListHTML(tasksList) {
     return `
       <div class="col-md-4 h-100 py-2">        
-        <div class="taskslist card" id="taskslist-${tasksList.id}">
-            <div class="taskslist-header card-header p-2">
-                <h5 class="taskslist-header-title mb-0">${tasksList.title}</h5>
+        <div class="tasks__card card" id="${tasksList.id}">
+            <div class="tasks__header card-header p-2">
+                <h5 class="tasks__title mb-0">${tasksList.title}</h5>
             </div>
 
-            <div class="taskslist-body card-body h-100 p-2" data-mdb-perfect-scrollbar="true">
-                <ul class="taskslist-items list-group">
+            <div class="tasks__body card-body h-100 p-2" data-mdb-perfect-scrollbar="true">
+                <ul class="tasks__list list-group">
                     ${TasksListWidget.itemsHTML(tasksList.items)}
                 </ul>
             </div>
 
-            <div class="taskslist-footer card-footer text-start p-2">
-                <div class="taskslist-items-add">&#10009; Добавить новую карточку</div>
-                <div class="taskslist-items-card hidden">
+            <div class="tasks__footer card-footer text-start p-2">
+                <div class="item__add">&#10009; Добавить новую карточку</div>
+                <div class="item__card hidden">
                   <div class="form-outline mb-2">
-                    <textarea class="new-item form-control" rows="2" 
+                    <textarea class="new__item__text form-control" rows="2" 
                       placeholder="Введите текст карточки"></textarea>
                   </div>
-                  <button class="taskslist-new-item-add btn btn-success btn-sm" title="Добавить новую задачу">
+                  <button class="new__item__add btn btn-success btn-sm" title="Добавить новую задачу">
                     Добавить
                   </button>
-                  <button class="taskslist-new-item-close btn btn-transparent btn-sm" title="Закрыть окно добавления">
+                  <button class="new__item__close btn btn-transparent btn-sm" title="Закрыть окно добавления">
                     &#10005;
                   </button>
                 </div>
@@ -77,48 +77,48 @@ export default class TasksListWidget {
     `;
   }
 
-  static tasksListIDSelector(id) {
-    return `[id=taskslist-${id}]`;
+  static idSelector(id) {
+    return `[id="${id}"]`;
   }
 
   static get showCardSelector() {
-    return '.taskslist-items-add';
+    return '.item__add';
   }
 
   static get itemSelector() {
-    return '.taskslist-item';
+    return '.tasks__item';
   }
 
   static get listItemsSelector() {
-    return '.taskslist-items';
+    return '.tasks__list';
   }
 
   static get listItemsClass() {
-    return 'taskslist-items';
+    return 'tasks__list';
   }
 
   static get listItemClass() {
-    return 'taskslist-items';
+    return 'tasks__item';
   }
 
   static get delItemSelector() {
-    return '.taskslist-item-close';
+    return '.item__close';
   }
 
   static get closeCardSelector() {
-    return '.taskslist-new-item-close';
+    return '.new__item__close';
   }
 
   static get addCardSelector() {
-    return '.taskslist-new-item-add';
+    return '.new__item__add';
   }
 
   static get cardDivSelector() {
-    return '.taskslist-items-card';
+    return '.item__card';
   }
 
   static get textNewItemSelector() {
-    return '.new-item';
+    return '.new__item__text';
   }
 
   bindToDOM() {
@@ -135,7 +135,7 @@ export default class TasksListWidget {
   }
 
   initAddItemEvents(id) {
-    const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
+    const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
     const ul = tasksList.querySelector(TasksListWidget.listItemsSelector);
     const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
     const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
@@ -177,7 +177,7 @@ export default class TasksListWidget {
   }
 
   initItemEvents(id) {    
-    const tasksList = this.parentEl.querySelector(TasksListWidget.tasksListIDSelector(id));
+    const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
     
     const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
 
