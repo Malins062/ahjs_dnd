@@ -37,10 +37,11 @@
 }
 
 .tasks__item:hover {
-  background-color: rgb(166, 251, 223);
+  background-color: rgb(152, 253, 219);
 }
 
 .tasks__item {
+  background-color: rgb(242, 251, 248);
   list-style-type: none;    
   cursor: grab !important; 
   transition: .3s;
