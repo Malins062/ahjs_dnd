@@ -34,8 +34,8 @@ export default class TasksListWidget {
   static itemsHTML(items) {
     let html = '';
     items.forEach((taskText) => {
-      html += 
-        `<li class="tasks__item list-group-item mb-2" id="${uuidv4()}" draggable="true">
+      html += `
+        <li class="tasks__item list-group-item mb-2" id="${uuidv4()}" draggable="true">
           <div class="item__text">${taskText}</div>
           <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
@@ -142,12 +142,26 @@ export default class TasksListWidget {
     const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
     const closeCard = tasksList.querySelector(TasksListWidget.closeCardSelector);
 
+    ul.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
+    ul.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
     showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
     addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul, id));
     closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
   }
 
-  // Добавление новой задачи
+  onListDragStart(evt) {
+    console.log('onListDragStart', evt.target);
+    evt.target.classList.add('selected');
+    evt.target.classList.add('hidden');
+  }
+
+  onListDragEnd(evt) {
+    console.log('onListDragEnd', evt.target);
+    evt.target.classList.remove('selected');
+    evt.target.classList.remove('hidden');
+  }
+
+    // Добавление новой задачи
   onClickAddCard(evt, cardDiv, ul, id) {
     evt.preventDefault();
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
@@ -181,25 +195,25 @@ export default class TasksListWidget {
     
     const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
 
-    console.log(tasksList, tasksListItems);
-    tasksListItems.addEventListener('dragover', (evt) => {
-      evt.preventDefault();
-    });
+    // console.log(tasksList, tasksListItems);
+    // tasksListItems.addEventListener('dragover', (evt) => {
+    //   evt.preventDefault();
+    // });
 
-    tasksListItems.addEventListener('drop', (evt) => {
-      console.log('LIST onDrop', evt);
-      const dropList = evt.target;
-      if (!dropList.classList.contains(TasksListWidget.listItemsClass)) {
-        return;
-      }
+    // tasksListItems.addEventListener('drop', (evt) => {
+    //   console.log('LIST onDrop', evt);
+    //   const dropList = evt.target;
+    //   if (!dropList.classList.contains(TasksListWidget.listItemsClass)) {
+    //     return;
+    //   }
 
-      const id = evt.dataTransfer.getData('text');
-      const draggableElement = document.getElementById(id);
-      console.log(id, evt, draggableElement );
+    //   const id = evt.dataTransfer.getData('text');
+    //   const draggableElement = document.getElementById(id);
+    //   console.log(id, evt, draggableElement );
 
-      dropList.appendChild(draggableElement );
-      evt.dataTransfer.clearData();
-    });
+    //   dropList.appendChild(draggableElement );
+    //   evt.dataTransfer.clearData();
+    // });
 
     const items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
     items.forEach((item) => {
@@ -227,30 +241,30 @@ export default class TasksListWidget {
         });
       });
 
-      item.addEventListener('dragstart', (evt) => {
-        console.log('ITEM onDragStart', evt);
-        evt.dataTransfer.effectAllowed = "copyMove";
-        evt.dataTransfer.setData('text/plain', evt.target.id);
-        setTimeout(() => {
-          evt.target.classList.add('selected');
-          evt.target.classList.add('hidden');
-        }, 0);
-      })
+      // item.addEventListener('dragstart', (evt) => {
+      //   console.log('ITEM onDragStart', evt);
+      //   evt.dataTransfer.effectAllowed = "copyMove";
+      //   evt.dataTransfer.setData('text/plain', evt.target.id);
+      //   setTimeout(() => {
+      //     evt.target.classList.add('selected');
+      //     evt.target.classList.add('hidden');
+      //   }, 0);
+      // })
 
-      item.addEventListener('drop', (evt) => {
-        console.log('ITEM onDrop', evt);
-        evt.preventDefault();
-      })
+      // item.addEventListener('drop', (evt) => {
+      //   console.log('ITEM onDrop', evt);
+      //   evt.preventDefault();
+      // })
       
-      item.addEventListener('dragleave', (evt) => {
-        console.log('ITEM onDragLeave', evt);
-      });
+      // item.addEventListener('dragleave', (evt) => {
+      //   console.log('ITEM onDragLeave', evt);
+      // });
 
-      item.addEventListener('dragend', (evt) => {
-        console.log('ITEM onDragEnd', evt);
-        evt.target.classList.remove('selected');
-        evt.target.classList.remove('hidden');
-      });
+      // item.addEventListener('dragend', (evt) => {
+      //   console.log('ITEM onDragEnd', evt);
+      //   evt.target.classList.remove('selected');
+      //   evt.target.classList.remove('hidden');
+      // });
     });
   }
 
