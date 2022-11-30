@@ -40,7 +40,7 @@
   background-color: rgb(242, 251, 248);
   list-style-type: none;    
   cursor: grab !important; 
-  transition: .3s;
+  transition: .2s;
 }
 
 .tasks__item.dragged {
@@ -52,6 +52,7 @@
   z-index: 999;
   pointer-events: none;
   cursor: grabbing !important;
+  opacity: 0.9;
 
   transform: rotate(2deg);
   -webkit-transform: rotate(2deg);
@@ -62,6 +63,10 @@
 .tasks__item.selected {
   border-radius: 5px;
   box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
-  opacity: 0.6;
   cursor: grabbing !important;
+
+  transform: rotate(2deg);
+  -webkit-transform: rotate(2deg);
+  -o-transform: rotate(2deg);
+  -moz-transform: rotate(2deg);
 }

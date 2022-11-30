@@ -36,7 +36,7 @@ export default class TasksListWidget {
     items.forEach((taskText) => {
       html += `
         <li class="tasks__item list-group-item mb-2" id="${uuidv4()}" draggable="true">
-          ${taskText}
+          <div class="item__text">${taskText}</div>
           <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
     });
@@ -131,8 +131,7 @@ export default class TasksListWidget {
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
 
-    document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
-    document.addEventListener('mouseup', (evt) => this.onMouseUp(evt));
+    // document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
     // document.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
     // document.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
 
@@ -151,75 +150,48 @@ export default class TasksListWidget {
     const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
     const closeCard = tasksList.querySelector(TasksListWidget.closeCardSelector);
 
-    // ul.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
-    // ul.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
-    // ul.addEventListener('dragover', (evt) => this.onListDragOver(evt));
+    ul.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
+    ul.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
+    ul.addEventListener('dragover', (evt) => this.onListDragOver(evt));
     
     showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
     addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul, id));
     closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
   }
 
-  onMouseDown(evt) {
-    evt.preventDefault();
-    console.log('onMouseDown', evt.target);
-    if (evt.target.classList.contains(TasksListWidget.delItemClass) || 
-      !evt.target.classList.contains(TasksListWidget.itemClass) || (evt.which != 1))  {
-      return;
-    }
-
-    this.draggedItem = evt.target;
-    this.draggedItem.classList.add('selected');
-    // this.draggedItem.classList.add('dragged');
-    // this.draggedItem.downX = evt.pageX;
-    // this.draggedItem.downY = evt.pageY;
+  onListDragStart(evt) {
+    console.log('onListDragStart', evt.target);
+    setTimeout(() => {
+      evt.target.classList.add('selected');
+      evt.target.classList.add('hidden');
+    }, 0);
   }
 
-  onMouseUp(evt) {
-    evt.preventDefault();
-    console.log('onMouseUp', evt.target);
-    if (!this.draggedItem) {
-      return;
-    }
-
-    this.draggedItem.classList.remove('selected');
-    this.draggedItem = undefined;
+  onListDragEnd(evt) {
+    console.log('onListDragEnd', evt.target);
+    evt.target.classList.remove('selected');
+    evt.target.classList.remove('hidden');
   }
 
-
-  // onListDragStart(evt) {
-  //   console.log('onListDragStart', evt.target);
-  //   setTimeout(() => {
-  //     evt.target.classList.add('selected');
-  //     evt.target.classList.add('hidden');
-  //   }, 0);
-  // }
-
-  // onListDragEnd(evt) {
-  //   console.log('onListDragEnd', evt.target);
-  //   evt.target.classList.remove('selected');
-  //   evt.target.classList.remove('hidden');
-  // }
-
-  // onListDragOver(evt) {
-  //   evt.preventDefault();
+  onListDragOver(evt) {
+    evt.preventDefault();
   
-  //   const activeElement = document.querySelector(`.selected`);
-  //   const currentElement = evt.target;
-  //   const isMoveable = activeElement !== currentElement &&
-  //     currentElement.classList.contains(TasksListWidget.itemClass);
+    const activeElement = document.querySelector(`.selected`);
+    const currentElement = evt.target;
+    const isMoveable = activeElement !== currentElement &&
+      currentElement.classList.contains(TasksListWidget.itemClass);
        
-  //   if (!isMoveable) {
-  //     return;
-  //   }
+    if (!isMoveable) {
+      return;
+    }
 
-  //   const nextElement = (currentElement === activeElement.nextElementSibling) ?
-	// 	  currentElement.nextElementSibling :
-	// 	  currentElement;
+    const nextElement = (currentElement === activeElement.nextElementSibling) ?
+		  currentElement.nextElementSibling :
+		  currentElement;
     
-  //   console.log('onListDragOver', evt.target, nextElement, activeElement);
-  //   evt.target.insertBefore(activeElement, nextElement);
-  // }
+    console.log('onListDragOver', evt.target, nextElement, activeElement);
+    evt.target.insertBefore(activeElement, nextElement);
+  }
 
     // Добавление новой задачи
   onClickAddCard(evt, cardDiv, ul, id) {
