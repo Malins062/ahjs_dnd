@@ -24,7 +24,7 @@ export default class TasksListWidget {
   constructor(parentEl, tasksList) {
     this.parentEl = parentEl;
     this.tasksList = tasksList;
-    this.draggedItem = undefined;
+    this.draggedItem = {};
 
     // Добавление уникальных номеров для каждого списка
     this.tasksList.forEach((list) => list.id = uuidv4());
@@ -125,6 +125,64 @@ export default class TasksListWidget {
     return '.new__item__text';
   }
 
+  // Получени координат элемента
+  static _getCoords(elem) {
+    const box = elem.getBoundingClientRect();
+  
+    return {
+      top: box.top + scrollX,
+      left: box.left + scrollY
+    };
+  }
+
+  // Создание элемента для перетаскивания
+  static _createElem(element) {
+    // запомнить старые свойства, чтобы вернуться к ним при отмене переноса
+    const elem = element;
+    const old = {
+      parent: elem.parentNode,
+      nextSibling: elem.nextSibling,
+      position: elem.position || '',
+      left: elem.left || '',
+      top: elem.top || '',
+      width: elem.width || '',
+      height: elem.height || '',
+      zIndex: elem.zIndex || ''
+    };
+
+    // Функция для отмены переноса
+    elem.rollback = function() {
+      old.parent.insertBefore(elem, old.nextSibling);
+      elem.style.position = old.position;
+      elem.style.left = old.left;
+      elem.style.top = old.top;
+      elem.style.zIndex = old.zIndex
+    };
+
+    return elem;   
+  }
+
+  // Функция начала перетаскивания элемента, его создание поверх всех
+  static _startDrag(element) {
+    const elem = element;
+  
+    document.body.appendChild(elem);
+    elem.style.zIndex = 9999;
+    elem.style.position = 'absolute';
+  }
+
+  // Функция окончания перетаскивания элемента, его создание поверх всех
+  static _finishDrag(element) {
+    const dropElem = findDroppable(element);
+
+    if (!dropElem) {
+      self.onDragCancel(dragObject);
+    } else {
+      self.onDragEnd(dragObject, dropElem);
+    }
+  }
+
+  // Разметка HTML и отслеживание событий
   bindToDOM() {
     this.parentEl.innerHTML = '';
     this.tasksList.forEach((tasksList) => {
@@ -132,9 +190,6 @@ export default class TasksListWidget {
     });
 
     document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
-    document.addEventListener('mouseup', (evt) => this.onMouseUp(evt));
-    // document.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
-    // document.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
 
     this.tasksList.forEach((list) => {
       this.initListEvents(list.id);
@@ -168,60 +223,72 @@ export default class TasksListWidget {
       return;
     }
 
-    this.draggedItem = evt.target;
-    this.draggedItem.classList.add('selected');
+    this.draggedItem.selectElem = evt.target;
+    this.draggedItem.selectElem.classList.add('selected');
     // this.draggedItem.classList.add('dragged');
-    // this.draggedItem.downX = evt.pageX;
-    // this.draggedItem.downY = evt.pageY;
+    this.draggedItem.downX = evt.pageX;
+    this.draggedItem.downY = evt.pageY;
+
+    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener('mousemove', this.onMouseMove);
   }
 
   onMouseUp(evt) {
     evt.preventDefault();
-    console.log('onMouseUp', evt.target);
-    if (!this.draggedItem) {
-      return;
-    }
+    console.log('onMouseUp');
+    // if (!Object.keys(this.draggedItem).length) {
+    //   return;
+    // }
 
-    this.draggedItem.classList.remove('selected');
-    this.draggedItem = undefined;
+    // this.draggedItem.elem.classList.remove('selected');
+    // this.draggedItem = {};
+    document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
   }
 
+  onMouseMove(evt) {
+    evt.preventDefault();
+    console.log('onMouseMove');
+    // if (!Object.keys(this.draggedItem).length) {
+    //   return;
+    // }
 
-  // onListDragStart(evt) {
-  //   console.log('onListDragStart', evt.target);
-  //   setTimeout(() => {
-  //     evt.target.classList.add('selected');
-  //     evt.target.classList.add('hidden');
-  //   }, 0);
-  // }
+    // console.log('onMouseMove', evt.target, this.draggedItem);
+    // if (!this.draggedItem.elem) { // если перенос не начат...
 
-  // onListDragEnd(evt) {
-  //   console.log('onListDragEnd', evt.target);
-  //   evt.target.classList.remove('selected');
-  //   evt.target.classList.remove('hidden');
-  // }
-
-  // onListDragOver(evt) {
-  //   evt.preventDefault();
+    //   console.log('No element', this.draggedItem.elem);
   
-  //   const activeElement = document.querySelector(`.selected`);
-  //   const currentElement = evt.target;
-  //   const isMoveable = activeElement !== currentElement &&
-  //     currentElement.classList.contains(TasksListWidget.itemClass);
-       
-  //   if (!isMoveable) {
-  //     return;
-  //   }
+    //   // посчитать дистанцию, на которую переместился курсор мыши
+    //   const moveX = evt.pageX - this.draggedItem.downX,
+    //     moveY = evt.pageY - this.draggedItem.downY;      
+    //   // если мышь не передвинулась достаточно далеко, то ничего не делать
+    //   if ( Math.abs(moveX) < 3 && Math.abs(moveY) < 3 ) {
+    //     return; 
+    //   }
+  
+    //   this.draggedItem.elem = TasksListWidget._createElem(this.draggedItem.selectElem); // захватить элемент
+    //   if (!this.draggedItem.elem) {
+    //     this.draggedItem = {}; // перемещаемые элемент создать не удалось, отмена переноса
+    //     return; // возможно, нельзя захватить за эту часть элемента
+    //   }
+  
+    //   // елемент создан успешно
+    //   // создать вспомогательные свойства shiftX/shiftY
+    //   const coords = TasksListWidget._getCoords(this.draggedItem.elem);
+    //   this.draggedItem.shiftX = this.draggedItem.downX - coords.left;
+    //   this.draggedItem.shiftY = this.draggedItem.downY - coords.top;
+  
+    //   TasksListWidget._startDrag(this.draggedItem.elem); // отобразить начало переноса
+    // }
+  
+    // // отобразить перенос элемента при каждом движении мыши
+    // this.draggedItem.elem.style.left = evt.pageX - this.draggedItem.shiftX + 'px';
+    // this.draggedItem.elem.style.top = evt.pageY - this.draggedItem.shiftY + 'px';
+  
+    // return false;
+  }
 
-  //   const nextElement = (currentElement === activeElement.nextElementSibling) ?
-	// 	  currentElement.nextElementSibling :
-	// 	  currentElement;
-    
-  //   console.log('onListDragOver', evt.target, nextElement, activeElement);
-  //   evt.target.insertBefore(activeElement, nextElement);
-  // }
-
-    // Добавление новой задачи
+  // Добавление новой задачи
   onClickAddCard(evt, cardDiv, ul, id) {
     evt.preventDefault();
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
