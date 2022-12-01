@@ -44,9 +44,10 @@
 }
 
 .tasks__item.dragged {
+  background-color: rgb(152, 253, 219);
   border-radius: 5px;
   box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
-  padding: 10px;
+  /* padding: 10px; */
 
   position: absolute;
   z-index: 999;

@@ -1,5 +1,6 @@
 import './taskslist.css';
 import { v4 as uuidv4 } from 'uuid';
+// import DragManager from './dragmanager';
 
 /*
 class TasksListWidget
@@ -24,21 +25,32 @@ export default class TasksListWidget {
   constructor(parentEl, tasksList) {
     this.parentEl = parentEl;
     this.tasksList = tasksList;
-    this.draggedItem = {};
+    this.dragItem = undefined;
+    this.shiftX = 0;
+    this.shiftY = 0;
 
     // Добавление уникальных номеров для каждого списка
     this.tasksList.forEach((list) => list.id = uuidv4());
     // console.log(this.tasksList);
   }
 
+  static itemHTML(itemText) {
+    const id = uuidv4(),
+      html = `
+        <li class="tasks__item list-group-item mb-2" id="${id}">
+          ${itemText}
+          <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
+        </li>`;
+    return {
+      innerHTML: html,
+      id: id
+    }
+  }
+
   static itemsHTML(items) {
     let html = '';
     items.forEach((taskText) => {
-      html += `
-        <li class="tasks__item list-group-item mb-2" id="${uuidv4()}" draggable="true">
-          ${taskText}
-          <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
-        </li>`;
+      html += this.itemHTML(taskText).innerHTML;
     });
     return html;
   };
@@ -125,130 +137,222 @@ export default class TasksListWidget {
     return '.new__item__text';
   }
 
-  // Получени координат элемента
-  static _getCoords(elem) {
-    const box = elem.getBoundingClientRect();
-  
-    return {
-      top: box.top + scrollX,
-      left: box.left + scrollY
-    };
-  }
-
-  // Создание элемента для перетаскивания
-  static _createElem(element) {
-    // запомнить старые свойства, чтобы вернуться к ним при отмене переноса
-    const elem = element;
-    const old = {
-      parent: elem.parentNode,
-      nextSibling: elem.nextSibling,
-      position: elem.position || '',
-      left: elem.left || '',
-      top: elem.top || '',
-      width: elem.width || '',
-      height: elem.height || '',
-      zIndex: elem.zIndex || ''
-    };
-
-    // Функция для отмены переноса
-    elem.rollback = function() {
-      old.parent.insertBefore(elem, old.nextSibling);
-      elem.style.position = old.position;
-      elem.style.left = old.left;
-      elem.style.top = old.top;
-      elem.style.zIndex = old.zIndex
-    };
-
-    return elem;   
-  }
-
-  // Функция начала перетаскивания элемента, его создание поверх всех
-  static _startDrag(element) {
-    const elem = element;
-  
-    document.body.appendChild(elem);
-    elem.style.zIndex = 9999;
-    elem.style.position = 'absolute';
-  }
-
-  // Функция окончания перетаскивания элемента, его создание поверх всех
-  static _finishDrag(element) {
-    const dropElem = findDroppable(element);
-
-    if (!dropElem) {
-      self.onDragCancel(dragObject);
-    } else {
-      self.onDragEnd(dragObject, dropElem);
-    }
-  }
-
   // Разметка HTML и отслеживание событий
   bindToDOM() {
+    // Отрисовка HTML
     this.parentEl.innerHTML = '';
     this.tasksList.forEach((tasksList) => {
       this.parentEl.innerHTML += TasksListWidget.tasksListHTML(tasksList);
     });
 
-    document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
+    // Добавление отслеживания событий на каждый список
+    this.tasksList.forEach((list) => this.initEvents(list.id));
 
-    this.tasksList.forEach((list) => {
-      this.initListEvents(list.id);
-      this.initItemEvents(list.id);
-    });
+    // document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
+    // document.addEventListener('mouseup', (evt) => this.onMouseUp(evt));
+    // item.addEventListener('dragstart', () => {return false;});
 
   }
 
-  initListEvents(id) {
+  initEvents(id) {
     const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
-    const ul = tasksList.querySelector(TasksListWidget.listItemsSelector);
-    const showCard = tasksList.querySelector(TasksListWidget.showCardSelector);
-    const cardDiv = tasksList.querySelector(TasksListWidget.cardDivSelector);
-    const addCard = tasksList.querySelector(TasksListWidget.addCardSelector);
-    const closeCard = tasksList.querySelector(TasksListWidget.closeCardSelector);
+    const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
 
-    // ul.addEventListener('dragstart', (evt) => this.onListDragStart(evt));
-    // ul.addEventListener('dragend', (evt) => this.onListDragEnd(evt));
-    // ul.addEventListener('dragover', (evt) => this.onListDragOver(evt));
+    // Отработка событий на добавлении новой карточки-задачи
+    const cardItem = tasksList.querySelector(TasksListWidget.cardDivSelector);
+    const showCardItem = tasksList.querySelector(TasksListWidget.showCardSelector);
+    const addNewItem = tasksList.querySelector(TasksListWidget.addCardSelector);
+    const closeCardItem = tasksList.querySelector(TasksListWidget.closeCardSelector);
+
+    showCardItem.addEventListener('click', (evt) => this.onClickShowCard(evt, cardItem));
+    addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, cardItem, tasksListItems));
+    closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardItem, showCardItem));
     
-    showCard.addEventListener('click', (evt) => this.onClickShowCard(evt, cardDiv));
-    addCard.addEventListener('click', (evt) => this.onClickAddCard(evt, cardDiv, ul, id));
-    closeCard.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardDiv, showCard));
+    this.initItemsEvents(tasksListItems);
+
+    // this.dragItem = new DragManager(document, TasksListWidget.itemSelector);
+    // this.dragItem.run();
+  }
+
+  initItemsEvents(ul) {
+    // Отработка событий на каждой задаче из списка
+    const items = ul.querySelectorAll(TasksListWidget.itemSelector);
+    items.forEach((item) => this.initItemEvents(item));
+  }
+
+  initItemEvents(item) {
+      // Событие удаления задачи
+      const closeButton = item.querySelector(TasksListWidget.delItemSelector);
+      closeButton.addEventListener('click', () => {
+        item.remove();
+      });
+
+      // Событие входа в зону наведения курсора на задачу
+      item.addEventListener('mouseover', (evt) => {
+        evt.preventDefault();
+        if (closeButton.classList.contains('hidden')) {
+          closeButton.classList.remove('hidden');
+        }
+      });
+
+      // Событие выхода из зоны наведения курсора на задачу
+      item.addEventListener('mouseout', (evt) => {
+        evt.preventDefault();
+        const delButtons = document.querySelectorAll(TasksListWidget.delItemSelector);
+        delButtons.forEach((delButton) => {
+          if (delButton && !delButton.classList.contains('hidden')) {
+            delButton.classList.add('hidden');
+          }
+        });
+      });
+
+      item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
   }
 
   onMouseDown(evt) {
-    evt.preventDefault();
     console.log('onMouseDown', evt.target);
-    if (evt.target.classList.contains(TasksListWidget.delItemClass) || 
-      !evt.target.classList.contains(TasksListWidget.itemClass) || (evt.which != 1))  {
+    evt.preventDefault();
+    if (!evt.which == 1 || !evt.target.classList.contains(TasksListWidget.itemClass)) {
       return;
     }
+    
+    console.log('onMouseDown on Item', this, evt.target);
+    const dragItem = evt.target,
+      shiftX = evt.clientX - evt.target.getBoundingClientRect().left,
+      shiftY = evt.clientY - evt.target.getBoundingClientRect().top;
 
-    this.draggedItem.selectElem = evt.target;
-    this.draggedItem.selectElem.classList.add('selected');
-    // this.draggedItem.classList.add('dragged');
-    this.draggedItem.downX = evt.pageX;
-    this.draggedItem.downY = evt.pageY;
+    // dragItem.style.minWidth = evt.target.style.width;
+    // dragItem.style.minHeight = evt.target.style.height;
+    setTimeout(() => {
+      dragItem.classList.add('dragged');      
+    }, 0);
 
-    document.addEventListener('mouseup', this.onMouseUp);
-    document.addEventListener('mousemove', this.onMouseMove);
+    function moveAt(pageX, pageY) {
+      if (!dragItem) {
+        return;
+      }
+      dragItem.style.left = pageX - shiftX + 'px';
+      dragItem.style.top = pageY - shiftY + 'px';
+    }
+  
+    document.body.append(dragItem);
+    moveAt(evt.pageX, evt.pageY);
+
+    function onMouseMove(evt) {
+      console.log('onMouseMove', evt.pageX, evt.pageY);
+      evt.preventDefault();
+      moveAt(evt.pageX, evt.pageY);
+  
+      dragItem.hidden = true;
+      const elemBelow = document.elementFromPoint(evt.clientX, evt.clientY);
+      dragItem.hidden = false;
+      console.log(elemBelow);  
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    function onMouseUp(evt) {
+      console.log('onMouseUp', evt.target);
+      // evt.preventDefault();
+      // // if (!dragItem || !dragItem.classList.contains(TasksListWidget.itemClass)) {
+      // //   return;
+      // // }
+  
+      console.log('onMouseUp on draggedItem');
+      dragItem.classList.remove('dragged');      
+      dragItem = undefined;
+  
+      console.log(document, this);
+      // document.onmousemove = null;
+      document.removeEventListener('mousemove', onMouseMove);
+      // this.draggedItem.elem.classList.remove('selected');
+      // self.onMouseUp = null;
+      // self.onMouseMove = null;
+    }
+  
+    // document.addEventListener('mousemove', (evt) => this.onMouseMove(evt, this));
+    dragItem.addEventListener('mouseup', onMouseUp);
   }
 
-  onMouseUp(evt) {
-    evt.preventDefault();
-    console.log('onMouseUp');
-    // if (!Object.keys(this.draggedItem).length) {
-    //   return;
-    // }
+  // onMouseDown(evt) {
+  //   console.log('onMouseDown', evt.target);
+  //   evt.preventDefault();
+  //   if (!evt.target.classList.contains(TasksListWidget.itemClass)) {
+  //     return;
+  //   }
+    
+  //   console.log('onMouseDown on Item', this, evt.target);
+  //   this.dragItem = evt.target;
+  //   // console.log(evt.target.getBoundingClientRect().left, evt.target.getBoundingClientRect().top);
+  //   // this.shiftX = evt.target.getBoundingClientRect().left,
+  //   // this.shiftY = evt.target.getBoundingClientRect().top;
+  //   this.shiftX = evt.clientX - evt.target.getBoundingClientRect().left,
+  //   this.shiftY = evt.clientY - evt.target.getBoundingClientRect().top;
 
-    // this.draggedItem.elem.classList.remove('selected');
-    // this.draggedItem = {};
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-  }
+  //   // dragItem.style.minWidth = evt.target.style.width;
+  //   // dragItem.style.minHeight = evt.target.style.height;
+  //   setTimeout(() => {
+  //     this.dragItem.classList.add('dragged');      
+  //   }, 0);
 
-  onMouseMove(evt) {
-    evt.preventDefault();
-    console.log('onMouseMove');
+  //   function moveAt(pageX, pageY) {
+  //     if (!this.dragItem) {
+  //       return;
+  //     }
+  //     this.dragItem.style.left = pageX - this.shiftX + 'px';
+  //     this.dragItem.style.top = pageY - this.shiftY + 'px';
+  //   }
+  
+  //   document.body.append(this.dragItem);
+  //   moveAt(evt.pageX, evt.pageY);
+
+  //   function onMouseMove(evt) {
+  //     console.log('onMouseMove', evt.pageX, evt.pageY);
+  //     evt.preventDefault();
+  //     moveAt(evt.pageX, evt.pageY);
+  
+  //     this.dragItem.hidden = true;
+  //     const elemBelow = document.elementFromPoint(evt.clientX, evt.clientY);
+  //     this.dragItem.hidden = false;
+  //     console.log(elemBelow);  
+  //   }
+
+  //   document.addEventListener('mousemove', onMouseMove);
+
+  //   function onMouseUp(evt) {
+  //     console.log('onMouseUp', evt.target);
+  //     evt.preventDefault();
+  //     if (!this.dragItem || !this.dragItem.classList.contains(TasksListWidget.itemClass)) {
+  //       return;
+  //     }
+  
+  //     console.log('onMouseUp on draggedItem');
+  //     this.dragItem.classList.remove('dragged');      
+  //     this.draggedItem = undefined;
+  
+  //     console.log(document, this);
+  //     // document.onmousemove = null;
+  //     document.removeEventListener('mousemove', onMouseMove);
+  //     // this.draggedItem.elem.classList.remove('selected');
+  //     // self.onMouseUp = null;
+  //     // self.onMouseMove = null;
+  //   }
+  
+  //   // document.addEventListener('mousemove', (evt) => this.onMouseMove(evt, this));
+  //   document.addEventListener('mouseup', onMouseUp);
+  // }
+
+
+  // onMouseMove() {
+  //   // evt.preventDefault();
+  //   console.log('onMouseMove', evt.pageX, evt.pageY);
+  //   this._moveAt(evt.pageX, evt.pageY);
+
+  //   this.dragItem.hidden = true;
+  //   const elemBelow = document.elementFromPoint(evt.clientX, evt.clientY);
+  //   this.dragItem.hidden = false;
+  //   console.log(elemBelow);
+
     // if (!Object.keys(this.draggedItem).length) {
     //   return;
     // }
@@ -286,15 +390,15 @@ export default class TasksListWidget {
     // this.draggedItem.elem.style.top = evt.pageY - this.draggedItem.shiftY + 'px';
   
     // return false;
-  }
+  // }
 
   // Добавление новой задачи
-  onClickAddCard(evt, cardDiv, ul, id) {
+  onClickAddCard(evt, cardDiv, ul) {
     evt.preventDefault();
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
     if (textItem.value.trim().length > 0) {
-      ul.innerHTML += TasksListWidget.itemsHTML([textItem.value]);
-      this.initItemEvents(id);
+      ul.innerHTML += TasksListWidget.itemHTML([textItem.value]).innerHTML;
+      this.initItemsEvents(ul);
     }
     textItem.value = '';
   }
@@ -315,84 +419,6 @@ export default class TasksListWidget {
       showCard.classList.remove('hidden');
     }
     cardDiv.classList.add('hidden');
-  }
-
-  initItemEvents(id) {    
-    const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
-    
-    const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
-
-    // console.log(tasksList, tasksListItems);
-    // tasksListItems.addEventListener('dragover', (evt) => {
-    //   evt.preventDefault();
-    // });
-
-    // tasksListItems.addEventListener('drop', (evt) => {
-    //   console.log('LIST onDrop', evt);
-    //   const dropList = evt.target;
-    //   if (!dropList.classList.contains(TasksListWidget.listItemsClass)) {
-    //     return;
-    //   }
-
-    //   const id = evt.dataTransfer.getData('text');
-    //   const draggableElement = document.getElementById(id);
-    //   console.log(id, evt, draggableElement );
-
-    //   dropList.appendChild(draggableElement );
-    //   evt.dataTransfer.clearData();
-    // });
-
-    const items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
-    items.forEach((item) => {
-      // console.log(item);
-
-      const closeButton = item.querySelector(TasksListWidget.delItemSelector);
-      closeButton.addEventListener('click', () => {
-        item.remove();
-      });
-
-      item.addEventListener('mouseover', (evt) => {
-        evt.preventDefault();
-        if (closeButton.classList.contains('hidden')) {
-          closeButton.classList.remove('hidden');
-        }
-      });
-
-      item.addEventListener('mouseout', (evt) => {
-        evt.preventDefault();
-        const delButtons = document.querySelectorAll(TasksListWidget.delItemSelector);
-        delButtons.forEach((delButton) => {
-          if (delButton && !delButton.classList.contains('hidden')) {
-            delButton.classList.add('hidden');
-          }
-        });
-      });
-
-      // item.addEventListener('dragstart', (evt) => {
-      //   console.log('ITEM onDragStart', evt);
-      //   evt.dataTransfer.effectAllowed = "copyMove";
-      //   evt.dataTransfer.setData('text/plain', evt.target.id);
-      //   setTimeout(() => {
-      //     evt.target.classList.add('selected');
-      //     evt.target.classList.add('hidden');
-      //   }, 0);
-      // })
-
-      // item.addEventListener('drop', (evt) => {
-      //   console.log('ITEM onDrop', evt);
-      //   evt.preventDefault();
-      // })
-      
-      // item.addEventListener('dragleave', (evt) => {
-      //   console.log('ITEM onDragLeave', evt);
-      // });
-
-      // item.addEventListener('dragend', (evt) => {
-      //   console.log('ITEM onDragEnd', evt);
-      //   evt.target.classList.remove('selected');
-      //   evt.target.classList.remove('hidden');
-      // });
-    });
   }
 
   // onMouseDown(evt) {
@@ -422,6 +448,5 @@ export default class TasksListWidget {
   //   this.draggedItem.addEventListener('dragstart', () => {
   //     return false;
   //   });
-  // }
-  
+  // }  
 }
