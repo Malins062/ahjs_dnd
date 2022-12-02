@@ -13,56 +13,64 @@ export default class DragManager {
     this.container = container;
     this.draggableSelector = draggableSelector;
     this.dragObjeсt = {};
-    console.log(this.container, this.draggableSelector, this.dragObjeсt);
+    this.onMouseDown = this.onMouseDown.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
+    console.log(this.container, this.draggableSelector, this.dragObjeсt);    
   }
   
   run() {
 
-    console.log('Run DragManager');
+    console.log('Run DragManager events');
     
-    this.container.addEventListener('mousemove', (evt) => this.onMouseMove(evt, this));
-    this.container.addEventListener('mousedown', (evt) => this.onMouseDown(evt, this));
-    this.container.addEventListener('mouseup', (evt) => this.onMouseUp(evt, this));
-    // this.container.onmousemove = this.onMouseMove(evt, this);
-    // this.container.onmouseup = this.onMouseUp;
-    // this.container.onmousedown = this.onMouseDown;
-  
-    this.onDragEnd = function(dragObjeсt, dropElem) {};
-    this.onDragCancel = function(dragObjeсt) {};  
+    this.container.addEventListener('mousedown', this.onMouseDown);
+    this.container.addEventListener('mouseup', this.onMouseUp);
   }
 
-  onMouseDown(evt, self) {
-    if (evt.which != 1) {
-      return;
+  onMouseDown(evt) {
+    console.log('DragManager: left button mouse down:');
+    console.log('event - ', evt.which, evt.target, this.draggableSelector);
+    if (!(evt.which == 1 && evt.target.classList.contains(this.draggableSelector)))  {
+      console.log('if - ', evt.which, evt.target);
+      return;      
     } 
 
-    // const elem = e.target.closest(this.draggableSelector);
-    const elem = evt.target;
-    console.log('Left button mouse down', evt, elem);
-    if (!elem) {
-      return;
-    }
-
-    self.dragObjeсt.elem = elem;
-    // self.dragObjeсt.elem.classList.add('dragged');
+    this.dragObjeсt.elem = evt.target;
+    this.dragObjeсt.elem.classList.add('dragged');
 
     // запомним, что элемент нажат на текущих координатах pageX/pageY
-    self.dragObjeсt.downX = evt.pageX;
-    self.dragObjeсt.downY = evt.pageY;
+    this.dragObjeсt.downX = evt.pageX;
+    this.dragObjeсt.downY = evt.pageY;
+    console.log('dragObject - ', this.dragObjeсt);
 
+    this.container.addEventListener('mousemove', this.onMouseMove);
     return false;
   }
 
-  onMouseMove(evt, self) {
-    console.log('Mouse move', self.draggableSelector, self.dragObject);
-    // if (!Object.keys(self.dragObject).length) {
-    if (!self.dragObject) {
+  onMouseUp(evt) {
+    console.log('DragManager: mouse up');
+    console.log(this);
+    this.container.removeEventListener('mousemove', this.onMouseMove);
+
+    if (this.dragObjeсt.avatar) { // если перенос идет
+      this.finishDrag(evt, this.dragObjeсt.avatar);
+    }
+
+    // перенос либо не начинался, либо завершился
+    // в любом случае очистим "состояние переноса" this.dragObjeсt
+    this.dragObjeсt = {};
+  }
+
+  onMouseMove(evt) {
+    console.log('DragManager: mouse move:');
+    console.log('params - ', evt, this.dragObjeсt);
+    if (this.dragObject == {}) {
       return; // элемент не зажат
     } 
 
-    if (!self.dragObjeсt.avatar) { // если перенос не начат...
-      const moveX = e.pageX - self.dragObjeсt.downX,
-        moveY = e.pageY - self.dragObjeсt.downY;
+    if (!this.dragObjeсt.avatar) {
+      const moveX = evt.pageX - this.dragObjeсt.downX,
+        moveY = evt.pageY - this.dragObjeсt.downY;
 
       // если мышь передвинулась в нажатом состоянии недостаточно далеко
       if (Math.abs(moveX) < 3 && Math.abs(moveY) < 3) {
@@ -70,53 +78,56 @@ export default class DragManager {
       }
 
       // начинаем перенос
-      self.dragObjeсt.avatar = self.createAvatar(evt); // создать аватар
-      if (!self.dragObjeсt.avatar) { // отмена переноса, нельзя "захватить" за эту часть элемента
-        self.dragObjeсt = {};
+      this.dragObjeсt.avatar = this.createAvatar(evt); // создать аватар
+      if (!this.dragObjeсt.avatar) { // отмена переноса, нельзя "захватить" за эту часть элемента
+        this.dragObjeсt = {};
         return;
       }
 
       // аватар создан успешно
       // создать вспомогательные свойства shiftX/shiftY
-      const coords = self._getCoords(self.dragObjeсt.avatar);
-      self.dragObjeсt.shiftX = self.dragObjeсt.downX - coords.left;
-      self.dragObjeсt.shiftY = self.dragObjeсt.downY - coords.top;
+      const coords = this._getCoords(this.dragObjeсt.avatar);
+      this.dragObjeсt.shiftX = this.dragObjeсt.downX - coords.left;
+      this.dragObjeсt.shiftY = this.dragObjeсt.downY - coords.top;
 
-      self.startDrag(evt); // отобразить начало переноса
+      this.startDrag(this.dragObjeсt.avatar); // отобразить начало переноса
     }
 
     // отобразить перенос объекта при каждом движении мыши
-    self.dragObjeсt.avatar.style.left = e.pageX - self.dragObjeсt.shiftX + 'px';
-    self.dragObjeсt.avatar.style.top = e.pageY - self.dragObjeсt.shiftY + 'px';
+    this.dragObjeсt.avatar.style.left = evt.pageX - this.dragObjeсt.shiftX + 'px';
+    this.dragObjeсt.avatar.style.top = evt.pageY - this.dragObjeсt.shiftY + 'px';
+
+    console.log('avatar move', this.dragObjeсt.avatar);        
 
     return false;
   }
 
-  onMouseUp(evt, self) {
-    if (self.dragObjeсt.avatar) { // если перенос идет
-      self.finishDrag(evt);
-    }
-
-    // перенос либо не начинался, либо завершился
-    // в любом случае очистим "состояние переноса" self.dragObjeсt
-    self.dragObjeсt = {};
-  }
-
-  finishDrag(e) {
-    const dropElem = this.findDroppable(e);
-
+  finishDrag(evt, avatar) {
+    const dropElem = this.findDroppable(evt);
+    console.log('dropElem - ', dropElem);
+    console.log('dragObject - ', avatar);
     if (!dropElem) {
-      self.onDragCancel(this.dragObjeсt);
+      avatar.rollback();
     } else {
-      self.onDragEnd(this.dragObjeсt, dropElem);
+      // скрыть/удалить переносимый объект
+      // dragItem.elem.hidden = true;
+      dropElem.parent.insertBefore(avatar, dropElem.nextSibling);
+      // успешный перенос, показать улыбку классом computer-smile
+      dropElem.classList.remove('dragged');
+
+      // // убрать улыбку через 0.2 сек
+      // setTimeout(function() {
+      //   dropElem.classList.remove('computer-smile');
+      // }, 200);
     }
   }
 
-  createAvatar(e) {
+  createAvatar(evt) {
 
     // запомнить старые свойства, чтобы вернуться к ним при отмене переноса
     const avatar = this.dragObjeсt.elem,
       old = {
+        className: avatar.className,
         parent: avatar.parentNode,
         nextSibling: avatar.nextSibling,
         position: avatar.position || '',
@@ -128,6 +139,7 @@ export default class DragManager {
     // функция для отмены переноса
     avatar.rollback = () => {
       old.parent.insertBefore(avatar, old.nextSibling);
+      avatar.classList.remove('dragged');
       avatar.style.position = old.position;
       avatar.style.left = old.left;
       avatar.style.top = old.top;
@@ -137,21 +149,21 @@ export default class DragManager {
     return avatar;
   }
 
-  startDrag(e) {
-    const avatar = this.dragObjeсt.avatar;
-
+  startDrag(dragObject) {
+    const avatar = dragObject;
+    avatar.addEventListener('dragstart', () => {return false;});
     // инициировать начало переноса
     document.body.appendChild(avatar);
     avatar.style.zIndex = 9999;
     avatar.style.position = 'absolute';
   }
 
-  findDroppable(event) {
+  findDroppable(evt) {
     // спрячем переносимый элемент
     this.dragObjeсt.avatar.hidden = true;
 
     // получить самый вложенный элемент под курсором мыши
-    var elem = document.elementFromPoint(event.clientX, event.clientY);
+    const elem = document.elementFromPoint(evt.clientX, evt.clientY);
 
     // показать переносимый элемент обратно
     this.dragObjeсt.avatar.hidden = false;
@@ -161,7 +173,8 @@ export default class DragManager {
       return null;
     }
 
-    return elem.closest('.droppable');
+    console.log('findDroppable - ', elem, evt.clientX);
+    return elem.closest('.' + this.draggableSelector);
   }
 
   _getCoords(elem) { 

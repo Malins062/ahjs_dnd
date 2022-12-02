@@ -44,16 +44,16 @@
 }
 
 .tasks__item.dragged {
-  background-color: rgb(152, 253, 219);
+  background-color: rgb(230, 245, 182);
   border-radius: 5px;
   box-shadow: 0 0 10px rgb(38, 38, 38); /* Параметры тени */
   /* padding: 10px; */
 
-  position: absolute;
-  z-index: 999;
+  /* position: absolute; */
+  /* z-index: 999; */
   pointer-events: none;
   cursor: grabbing !important;
-  opacity: 0.9;
+  /* opacity: 0.9; */
 
   transform: rotate(2deg);
   -webkit-transform: rotate(2deg);

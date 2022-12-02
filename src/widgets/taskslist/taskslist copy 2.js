@@ -1,6 +1,6 @@
 import './taskslist.css';
 import { v4 as uuidv4 } from 'uuid';
-import DragManager from './dragmanager';
+// import DragManager from './dragmanager';
 
 /*
 class TasksListWidget
@@ -148,10 +148,6 @@ export default class TasksListWidget {
     // Добавление отслеживания событий на каждый список
     this.tasksList.forEach((list) => this.initEvents(list.id));
 
-    console.log('init DragManager');
-    this.dragItem = new DragManager(document, TasksListWidget.itemClass);
-    this.dragItem.run();
-
     // document.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
     // document.addEventListener('mouseup', (evt) => this.onMouseUp(evt));
     // item.addEventListener('dragstart', () => {return false;});
@@ -174,17 +170,8 @@ export default class TasksListWidget {
     
     this.initItemsEvents(tasksListItems);
 
-    // DragManager.onDragCancel = function(dragObject) {
-    //   dragObject.avatar.rollback();
-    // };
-
-    // DragManager.onDragEnd = function(dragObject, dropElem) {
-    //   dragObject.elem.style.display = 'none';
-    //   dropElem.classList.add('computer-smile');
-    //   setTimeout(function() {
-    //     dropElem.classList.remove('computer-smile');
-    //   }, 200);
-    // };
+    // this.dragItem = new DragManager(document, TasksListWidget.itemSelector);
+    // this.dragItem.run();
   }
 
   initItemsEvents(ul) {
@@ -219,7 +206,7 @@ export default class TasksListWidget {
         });
       });
 
-      // item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
+      item.addEventListener('mousedown', (evt) => this.onMouseDown(evt));
   }
 
   onMouseDown(evt) {
