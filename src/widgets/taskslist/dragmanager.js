@@ -62,8 +62,8 @@ export default class DragManager {
   }
 
   onMouseMove(evt) {
-    console.log('DragManager: mouse move:');
-    console.log('params - ', evt, this.dragObjeсt);
+    // console.log('DragManager: mouse move:');
+    // console.log('params - ', evt, this.dragObjeсt);
     if (this.dragObject == {}) {
       return; // элемент не зажат
     } 
@@ -97,7 +97,7 @@ export default class DragManager {
     this.dragObjeсt.avatar.style.left = evt.pageX - this.dragObjeсt.shiftX + 'px';
     this.dragObjeсt.avatar.style.top = evt.pageY - this.dragObjeсt.shiftY + 'px';
 
-    console.log('avatar move', this.dragObjeсt.avatar);        
+    // console.log('avatar move', this.dragObjeсt.avatar);        
 
     return false;
   }
