@@ -40,7 +40,7 @@ export default class TasksListWidget {
   static itemHTML(itemText) {
     const id = uuidv4(),
       html = `
-        <li class="tasks__item list-group-item mb-2" draggable="true" id="${id}">
+        <li class="tasks__item list-group-item mb-2" draggable="true" data-id="${id}">
           ${itemText}
           <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
@@ -61,7 +61,7 @@ export default class TasksListWidget {
   static tasksListHTML(tasksList) {
     return `
       <div class="col-md-4 h-100 py-2">        
-        <div class="tasks__card card" id="${tasksList.id}">
+        <div class="tasks__card card" data-id="${tasksList.id}">
             <div class="tasks__header card-header p-2">
                 <h5 class="tasks__title mb-0">${tasksList.title}</h5>
             </div>
@@ -93,7 +93,7 @@ export default class TasksListWidget {
   }
 
   static idSelector(id) {
-    return `[id="${id}"]`;
+    return `[data-id="${id}"]`;
   }
 
   static get showCardSelector() {
@@ -124,6 +124,10 @@ export default class TasksListWidget {
     return 'item__close';
   }
 
+  static get cardSelector() {
+    return '.tasks__card';
+  }
+
   static get closeCardSelector() {
     return '.new__item__close';
   }
@@ -140,6 +144,16 @@ export default class TasksListWidget {
     return '.new__item__text';
   }
 
+  static highlightTarget(target, style, isHighLight=false) {
+    setTimeout(() => {
+      if (isHighLight) {
+        target.classList.add(style);
+      } else {
+        target.classList.remove(style);
+      }
+    }, 0);
+  }
+
   // Разметка HTML и отслеживание событий
   bindToDOM() {
     // Отрисовка HTML
@@ -153,23 +167,27 @@ export default class TasksListWidget {
   }
 
   initEvents(id) {
-    const tasksList = this.parentEl.querySelector(TasksListWidget.idSelector(id));
-    const tasksListItems = tasksList.querySelector(TasksListWidget.listItemsSelector);    
+    const tasksCard = this.parentEl.querySelector(TasksListWidget.idSelector(id));
+    const tasksListItems = tasksCard.querySelector(TasksListWidget.listItemsSelector);    
 
     // Отработка событий на добавлении новой карточки-задачи
-    const cardItem = tasksList.querySelector(TasksListWidget.cardDivSelector);
-    const showCardItem = tasksList.querySelector(TasksListWidget.showCardSelector);
-    const addNewItem = tasksList.querySelector(TasksListWidget.addCardSelector);
-    const closeCardItem = tasksList.querySelector(TasksListWidget.closeCardSelector);
+    const cardItem = tasksCard.querySelector(TasksListWidget.cardDivSelector);
+    const showCardItem = tasksCard.querySelector(TasksListWidget.showCardSelector);
+    const addNewItem = tasksCard.querySelector(TasksListWidget.addCardSelector);
+    const closeCardItem = tasksCard.querySelector(TasksListWidget.closeCardSelector);
 
     showCardItem.addEventListener('click', (evt) => this.onClickShowCard(evt, cardItem));
     addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, cardItem, tasksListItems));
     closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardItem, showCardItem));
 
-    this.onDragEnter = this.onDragStart.bind(this);
-    this.onDragLeave = this.onDragEnd.bind(this);
-    tasksList.addEventListener('dragEnter', this.onDragEnter);
-    tasksList.addEventListener('dragLeave', this.onDragLeave);
+    this.onDragEnter = this.onDragEnter.bind(this);
+    this.onDragLeave = this.onDragLeave.bind(this);
+    this.onDrop = this.onDrop.bind(this);
+    this.onDragOver = this.onDragOver.bind(this);
+    tasksListItems.addEventListener('dragenter', this.onDragEnter);
+    tasksListItems.addEventListener('dragleave', this.onDragLeave);
+    tasksListItems.addEventListener('drop', this.onDrop);
+    tasksListItems.addEventListener('dragover', this.onDragOver);
     
     this.initItemsEvents(tasksListItems);
   }
@@ -206,39 +224,87 @@ export default class TasksListWidget {
       });
     });
 
+    this.dragEnterTarget = undefined;
     this.onDragStart = this.onDragStart.bind(this);
     this.onDragEnd = this.onDragEnd.bind(this);
     this.onDrag = this.onDrag.bind(this);
     item.addEventListener('dragstart', this.onDragStart);
     item.addEventListener('dragend', this.onDragEnd);
-    // item.addEventListener('drag', this.onDrag);
   }
 
   // Начало перетаскивания объекта
   onDragStart(evt) {
-    evt.currentTarget.classList.add(STYLE_DRAGGING);
+    console.log('onDragStart');
+    TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
+    // const item = evt.currentTarget; 
+    // setTimeout(() => {
+    //   item.classList.add(STYLE_DRAGGING);
+    // }, 1);
+    // console.log(item.className);
     this.onDrag(evt);
   }
 
   // Окончание перетаскивания объекта
   onDragEnd(evt) {
-    evt.currentTarget.classList.remove(STYLE_DRAGGING);
+    console.log('onDragEnd');
+    TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
+    // evt.currentTarget.classList.remove(STYLE_DRAGGING);
   }
 
-  // Окончание перетаскивания объекта
+  // Перетаскивание объекта
   onDrag(evt) {
+    console.log('onDrag: ', evt.currentTarget.outerHTML, evt.currentTarget.dataset.id);
     evt.dataTransfer.setData('text/html', evt.currentTarget.outerHTML);
     evt.dataTransfer.setData('text/plain', evt.currentTarget.dataset.id);
   }
 
+  // Объект перетащен
+  onDrop(evt) {
+    const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
+    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
+    
+    console.log('onDrop: ', evt.currentTarget, evt.dataTransfer.getData('text/plain'), evt.dataTransfer.getData('text/html'));
+    document.querySelectorAll(TasksListWidget.listItemsSelector).forEach(column => column.classList.remove('drop'));
+    document.querySelector(TasksListWidget.idSelector(evt.dataTransfer.getData('text/plain'))).remove();
+
+    const element = document.elementFromPoint(evt.clientX, evt.clientY);
+    if (!element.classList.contains(TasksListWidget.itemClass)) {
+      evt.currentTarget.innerHTML = evt.currentTarget.innerHTML + evt.dataTransfer.getData('text/html');
+    } else {
+      element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
+    }
+
+    this.initItemsEvents(evt.currentTarget);
+  }
+
+  onDragOver(evt) {
+    evt.preventDefault();
+  }
+
   // Вход объекта в зону где может быть сброшен
   onDragEnter(evt) {
-    evt.currentTarget.classList.add(STYLE_DROP);
+    console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
+    if (this.dragEnterTarget) {
+      return;
+    }
+
+    this.dragEnterTarget = evt.currentTarget;
+    const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
+    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
+    console.log('highlight enter', tasksCard);
   }
 
   // Выход объекта из зоны где может быть сброшен
   onDragLeave(evt) {
-    evt.currentTarget.classList.remove(STYLE_DROP);
+    console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
+    if (!this.dragEnterTarget == evt.target) {
+      return;
+    }
+
+    this.dragEnterTarget = undefined;
+    const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
+    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
+    console.log('highlight leave', tasksCard);
   }
 
   // Добавление новой задачи
