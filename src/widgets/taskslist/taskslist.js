@@ -1,5 +1,6 @@
 import './taskslist.css';
 import { v4 as uuidv4 } from 'uuid';
+import Storage from './storage';
 
 /*
 class TasksListWidget
@@ -22,15 +23,22 @@ class TasksListWidget
 */
 
 const STYLE_DRAGGING = 'dragging',
-  STYLE_DROP = 'drop';
+  STYLE_DROP = 'drop',
+  DATA_KEY = 'taskslist';
 
 export default class TasksListWidget {
-  constructor(parentEl, tasksList) {
+  constructor(parentEl, tasksList={}) {
     this.parentEl = parentEl;
-    this.tasksList = tasksList;
     this.dragItem = undefined;
     this.shiftX = 0;
     this.shiftY = 0;
+    this.storage = new Storage();
+    if (tasksList == {}) {
+      this.tasksList = this.storage.readItem(DATA_KEY);
+    } else {
+      this.tasksList = tasksList;
+      this.storage.writeItem(DATA_KEY, this.tasksList);
+    }
 
     // Добавление уникальных номеров для каждого списка
     this.tasksList.forEach((list) => list.id = uuidv4());
@@ -236,10 +244,6 @@ export default class TasksListWidget {
   onDragStart(evt) {
     console.log('onDragStart');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
-    // const item = evt.currentTarget; 
-    // setTimeout(() => {
-    //   item.classList.add(STYLE_DRAGGING);
-    // }, 1);
     // console.log(item.className);
     this.onDrag(evt);
   }
@@ -291,20 +295,20 @@ export default class TasksListWidget {
     this.dragEnterTarget = evt.currentTarget;
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
-    console.log('highlight enter', tasksCard);
+    console.log('highlight enter', tasksCard.className);
   }
 
   // Выход объекта из зоны где может быть сброшен
   onDragLeave(evt) {
     console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
-    if (!this.dragEnterTarget == evt.target) {
+    if (this.dragEnterTarget == evt.currentTarget) {
       return;
     }
 
     this.dragEnterTarget = undefined;
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
-    console.log('highlight leave', tasksCard);
+    console.log('highlight leave', tasksCard.className);
   }
 
   // Добавление новой задачи
