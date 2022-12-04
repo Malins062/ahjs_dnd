@@ -23,19 +23,18 @@ class TasksListWidget
     isUseStorage - использовать/не использовать локальное хранилище (по умолчанию использовать)
 */
 
-const STYLE_DRAGGING = 'dragging',
-  STYLE_DROP = 'drop',
-  DATA_KEY = 'taskslist';
+const STYLE_DRAGGING = 'dragging';
+const STYLE_DROP = 'drop';
+const DATA_KEY = 'taskslist';
 
 export default class TasksListWidget {
-  constructor(parentEl, tasksList, isUseStorage=true) {
+  constructor(parentEl, tasksList, isUseStorage = true) {
     this.parentEl = parentEl;
-    this.dragItem = undefined;
     this.isUseStorage = isUseStorage;
     this.shiftX = 0;
     this.shiftY = 0;
-    this.storage = new Storage();
 
+    this.storage = new Storage();
     if (isUseStorage) {
       this.tasksList = this.storage.readItem(DATA_KEY);
       if (!this.tasksList) {
@@ -47,21 +46,29 @@ export default class TasksListWidget {
     }
 
     // Добавление уникальных номеров для каждого списка
-    this.tasksList.forEach((list) => list.id = uuidv4());
-    // console.log(this.tasksList);
+    // eslint-disable-next-line no-param-reassign
+    this.tasksList.forEach((list) => { list.id = uuidv4(); });
+
+    this.onDragEnter = this.onDragEnter.bind(this);
+    this.onDragLeave = this.onDragLeave.bind(this);
+    this.onDrop = this.onDrop.bind(this);
+    this.onDragOver = this.onDragOver.bind(this);
+    this.onDragStart = this.onDragStart.bind(this);
+    this.onDragEnd = this.onDragEnd.bind(this);
+    this.onDrag = this.onDrag.bind(this);
   }
 
   static itemHTML(itemText) {
-    const id = uuidv4(),
-      html = `
+    const id = uuidv4();
+    const html = `
         <li class="tasks__item list-group-item mb-2" draggable="true" data-id="${id}">
           ${itemText}
           <div class="item__close hidden" title="Удалить задачу">&#10005;</div>
         </li>`;
     return {
       innerHTML: html,
-      id: id
-    }
+      id,
+    };
   }
 
   static itemsHTML(items) {
@@ -70,7 +77,7 @@ export default class TasksListWidget {
       html += this.itemHTML(taskText).innerHTML;
     });
     return html;
-  };
+  }
 
   static tasksListHTML(tasksList) {
     return `
@@ -162,7 +169,7 @@ export default class TasksListWidget {
     return '.new__item__text';
   }
 
-  static highlightTarget(target, style, isHighLight=false) {
+  static highlightTarget(target, style, isHighLight = false) {
     setTimeout(() => {
       if (isHighLight) {
         target.classList.add(style);
@@ -191,17 +198,17 @@ export default class TasksListWidget {
 
     const tasksCards = this.parentEl.querySelectorAll(TasksListWidget.cardSelector);
     this.tasksList = [];
-    
+
     tasksCards.forEach((card) => {
-      const list = {},
-        tasksListItems = card.querySelector(TasksListWidget.listItemsSelector),
-        title = card.querySelector(TasksListWidget.cardTitleSelector),
-        items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
-      
+      const list = {};
+      const tasksListItems = card.querySelector(TasksListWidget.listItemsSelector);
+      const title = card.querySelector(TasksListWidget.cardTitleSelector);
+      const items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
+
       list.title = title.innerText;
-      list.items = [];    
+      list.items = [];
       items.forEach((item) => list.items.push(item.innerHTML));
-      
+
       this.tasksList.push(list);
     });
 
@@ -211,7 +218,7 @@ export default class TasksListWidget {
 
   initEvents(id) {
     const tasksCard = this.parentEl.querySelector(TasksListWidget.idSelector(id));
-    const tasksListItems = tasksCard.querySelector(TasksListWidget.listItemsSelector);    
+    const tasksListItems = tasksCard.querySelector(TasksListWidget.listItemsSelector);
 
     // Отработка событий на добавлении новой карточки-задачи
     const cardItem = tasksCard.querySelector(TasksListWidget.cardDivSelector);
@@ -223,15 +230,11 @@ export default class TasksListWidget {
     addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, cardItem, tasksListItems));
     closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardItem, showCardItem));
 
-    this.onDragEnter = this.onDragEnter.bind(this);
-    this.onDragLeave = this.onDragLeave.bind(this);
-    this.onDrop = this.onDrop.bind(this);
-    this.onDragOver = this.onDragOver.bind(this);
     tasksListItems.addEventListener('dragenter', this.onDragEnter);
     tasksListItems.addEventListener('dragleave', this.onDragLeave);
     tasksListItems.addEventListener('drop', this.onDrop);
     tasksListItems.addEventListener('dragover', this.onDragOver);
-    
+
     this.initItemsEvents(tasksListItems);
   }
 
@@ -268,12 +271,8 @@ export default class TasksListWidget {
       });
     });
 
-    this.dragEnterTarget = undefined;
-    this.onDragStart = this.onDragStart.bind(this);
-    this.onDragEnd = this.onDragEnd.bind(this);
-    this.onDrag = this.onDrag.bind(this);
-    item.addEventListener('dragstart', this.onDragStart);
-    item.addEventListener('dragend', this.onDragEnd);
+    item.addEventListener('dragstart', this.onDragStart(this));
+    item.addEventListener('dragend', this.onDragEnd(this));
   }
 
   // Начало перетаскивания объекта
@@ -301,14 +300,14 @@ export default class TasksListWidget {
   onDrop(evt) {
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
-    
-    // console.log('onDrop: ', evt.currentTarget, evt.dataTransfer.getData('text/plain'), evt.dataTransfer.getData('text/html'));
-    document.querySelectorAll(TasksListWidget.listItemsSelector).forEach(column => column.classList.remove('drop'));
+
+    document.querySelectorAll(TasksListWidget.listItemsSelector).forEach((column) => column.classList.remove('drop'));
     document.querySelector(TasksListWidget.idSelector(evt.dataTransfer.getData('text/plain'))).remove();
 
     const element = document.elementFromPoint(evt.clientX, evt.clientY);
     if (!element.classList.contains(TasksListWidget.itemClass)) {
-      evt.currentTarget.innerHTML = evt.currentTarget.innerHTML + evt.dataTransfer.getData('text/html');
+      // eslint-disable-next-line no-param-reassign
+      evt.currentTarget.innerHTML += evt.dataTransfer.getData('text/html');
     } else {
       element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
     }
@@ -341,8 +340,9 @@ export default class TasksListWidget {
     evt.preventDefault();
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
     if (textItem.value.trim().length > 0) {
+      // eslint-disable-next-line no-param-reassign
       ul.innerHTML += TasksListWidget.itemHTML([textItem.value]).innerHTML;
-      
+
       this.saveItems();
       this.initItemsEvents(ul);
     }
