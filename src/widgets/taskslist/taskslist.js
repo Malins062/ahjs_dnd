@@ -48,14 +48,6 @@ export default class TasksListWidget {
     // Добавление уникальных номеров для каждого списка
     // eslint-disable-next-line no-param-reassign
     this.tasksList.forEach((list) => { list.id = uuidv4(); });
-
-    this.onDragEnter = this.onDragEnter.bind(this);
-    this.onDragLeave = this.onDragLeave.bind(this);
-    this.onDrop = this.onDrop.bind(this);
-    this.onDragOver = this.onDragOver.bind(this);
-    this.onDragStart = this.onDragStart.bind(this);
-    this.onDragEnd = this.onDragEnd.bind(this);
-    this.onDrag = this.onDrag.bind(this);
   }
 
   static itemHTML(itemText) {
@@ -230,6 +222,10 @@ export default class TasksListWidget {
     addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, cardItem, tasksListItems));
     closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardItem, showCardItem));
 
+    this.onDragEnter = this.onDragEnter.bind(this);
+    this.onDragLeave = this.onDragLeave.bind(this);
+    this.onDrop = this.onDrop.bind(this);
+    this.onDragOver = this.onDragOver.bind(this);
     tasksListItems.addEventListener('dragenter', this.onDragEnter);
     tasksListItems.addEventListener('dragleave', this.onDragLeave);
     tasksListItems.addEventListener('drop', this.onDrop);
@@ -271,8 +267,11 @@ export default class TasksListWidget {
       });
     });
 
-    item.addEventListener('dragstart', this.onDragStart(this));
-    item.addEventListener('dragend', this.onDragEnd(this));
+    this.onDrag = this.onDrag.bind(this);
+    this.onDragStart = this.onDragStart.bind(this);
+    this.onDragEnd = this.onDragEnd.bind(this);
+    item.addEventListener('dragstart', this.onDragStart);
+    item.addEventListener('dragend', this.onDragEnd);
   }
 
   // Начало перетаскивания объекта
@@ -286,7 +285,6 @@ export default class TasksListWidget {
   onDragEnd(evt) {
     // console.log('onDragEnd');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
-    // evt.currentTarget.classList.remove(STYLE_DRAGGING);
   }
 
   // Перетаскивание объекта
