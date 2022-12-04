@@ -20,6 +20,7 @@ class TasksListWidget
 
       ...
     ]
+    isUseStorage - использовать/не использовать локальное хранилище (по умолчанию использовать)
 */
 
 const STYLE_DRAGGING = 'dragging',
@@ -27,17 +28,22 @@ const STYLE_DRAGGING = 'dragging',
   DATA_KEY = 'taskslist';
 
 export default class TasksListWidget {
-  constructor(parentEl, tasksList={}) {
+  constructor(parentEl, tasksList, isUseStorage=true) {
     this.parentEl = parentEl;
     this.dragItem = undefined;
+    this.isUseStorage = isUseStorage;
     this.shiftX = 0;
     this.shiftY = 0;
     this.storage = new Storage();
-    if (tasksList == {}) {
+
+    if (isUseStorage) {
       this.tasksList = this.storage.readItem(DATA_KEY);
+      if (!this.tasksList) {
+        this.tasksList = tasksList;
+      }
+      this.storage.writeItem(DATA_KEY, this.tasksList);
     } else {
       this.tasksList = tasksList;
-      this.storage.writeItem(DATA_KEY, this.tasksList);
     }
 
     // Добавление уникальных номеров для каждого списка
@@ -136,6 +142,10 @@ export default class TasksListWidget {
     return '.tasks__card';
   }
 
+  static get cardTitleSelector() {
+    return '.tasks__title';
+  }
+
   static get closeCardSelector() {
     return '.new__item__close';
   }
@@ -172,6 +182,31 @@ export default class TasksListWidget {
 
     // Добавление отслеживания событий на каждый список
     this.tasksList.forEach((list) => this.initEvents(list.id));
+  }
+
+  saveItems() {
+    if (!this.isUseStorage) {
+      return;
+    }
+
+    const tasksCards = this.parentEl.querySelectorAll(TasksListWidget.cardSelector);
+    this.tasksList = [];
+    
+    tasksCards.forEach((card) => {
+      const list = {},
+        tasksListItems = card.querySelector(TasksListWidget.listItemsSelector),
+        title = card.querySelector(TasksListWidget.cardTitleSelector),
+        items = tasksListItems.querySelectorAll(TasksListWidget.itemSelector);
+      
+      list.title = title.innerText;
+      list.items = [];    
+      items.forEach((item) => list.items.push(item.innerHTML));
+      
+      this.tasksList.push(list);
+    });
+
+    // console.log(this.tasksList);
+    this.storage.writeItem(DATA_KEY, this.tasksList);
   }
 
   initEvents(id) {
@@ -211,6 +246,7 @@ export default class TasksListWidget {
     const closeButton = item.querySelector(TasksListWidget.delItemSelector);
     closeButton.addEventListener('click', () => {
       item.remove();
+      this.saveItems();
     });
 
     // Событие входа в зону наведения курсора на задачу
@@ -242,22 +278,21 @@ export default class TasksListWidget {
 
   // Начало перетаскивания объекта
   onDragStart(evt) {
-    console.log('onDragStart');
+    // console.log('onDragStart');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
-    // console.log(item.className);
     this.onDrag(evt);
   }
 
   // Окончание перетаскивания объекта
   onDragEnd(evt) {
-    console.log('onDragEnd');
+    // console.log('onDragEnd');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
     // evt.currentTarget.classList.remove(STYLE_DRAGGING);
   }
 
   // Перетаскивание объекта
   onDrag(evt) {
-    console.log('onDrag: ', evt.currentTarget.outerHTML, evt.currentTarget.dataset.id);
+    // console.log('onDrag: ', evt.currentTarget.outerHTML, evt.currentTarget.dataset.id);
     evt.dataTransfer.setData('text/html', evt.currentTarget.outerHTML);
     evt.dataTransfer.setData('text/plain', evt.currentTarget.dataset.id);
   }
@@ -267,7 +302,7 @@ export default class TasksListWidget {
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
     
-    console.log('onDrop: ', evt.currentTarget, evt.dataTransfer.getData('text/plain'), evt.dataTransfer.getData('text/html'));
+    // console.log('onDrop: ', evt.currentTarget, evt.dataTransfer.getData('text/plain'), evt.dataTransfer.getData('text/html'));
     document.querySelectorAll(TasksListWidget.listItemsSelector).forEach(column => column.classList.remove('drop'));
     document.querySelector(TasksListWidget.idSelector(evt.dataTransfer.getData('text/plain'))).remove();
 
@@ -278,6 +313,7 @@ export default class TasksListWidget {
       element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
     }
 
+    this.saveItems();
     this.initItemsEvents(evt.currentTarget);
   }
 
@@ -287,28 +323,17 @@ export default class TasksListWidget {
 
   // Вход объекта в зону где может быть сброшен
   onDragEnter(evt) {
-    console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
-    if (this.dragEnterTarget) {
-      return;
-    }
-
-    this.dragEnterTarget = evt.currentTarget;
-    const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
+    // console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
+    const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
-    console.log('highlight enter', tasksCard.className);
+    // console.log('highlight enter', tasksCard.className);
   }
 
   // Выход объекта из зоны где может быть сброшен
   onDragLeave(evt) {
-    console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
-    if (this.dragEnterTarget == evt.currentTarget) {
-      return;
-    }
-
-    this.dragEnterTarget = undefined;
-    const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
+    // console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
+    const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
-    console.log('highlight leave', tasksCard.className);
   }
 
   // Добавление новой задачи
@@ -317,6 +342,8 @@ export default class TasksListWidget {
     const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
     if (textItem.value.trim().length > 0) {
       ul.innerHTML += TasksListWidget.itemHTML([textItem.value]).innerHTML;
+      
+      this.saveItems();
       this.initItemsEvents(ul);
     }
     textItem.value = '';

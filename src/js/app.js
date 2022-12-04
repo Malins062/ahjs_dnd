@@ -22,6 +22,11 @@ const tasksList = [
       'Файл запуска приложения JS',
     ],
   },
+  {
+    title: 'Запланировано на далекое будущее',
+    items: ['Стать чемпионом',
+    ],
+  },
 ];
 
 const widgetTasksList = new TasksListWidget(document.querySelector('#widget-container'), tasksList);
