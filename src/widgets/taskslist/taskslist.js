@@ -275,6 +275,7 @@ export default class TasksListWidget {
   }
 
   // Начало перетаскивания объекта
+  // eslint-disable-next-line
   onDragStart(evt) {
     // console.log('onDragStart');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
@@ -282,12 +283,14 @@ export default class TasksListWidget {
   }
 
   // Окончание перетаскивания объекта
+  // eslint-disable-next-line
   onDragEnd(evt) {
     // console.log('onDragEnd');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
   }
 
   // Перетаскивание объекта
+  // eslint-disable-next-line
   onDrag(evt) {
     // console.log('onDrag: ', evt.currentTarget.outerHTML, evt.currentTarget.dataset.id);
     evt.dataTransfer.setData('text/html', evt.currentTarget.outerHTML);
@@ -295,6 +298,7 @@ export default class TasksListWidget {
   }
 
   // Объект перетащен
+  // eslint-disable-next-line
   onDrop(evt) {
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
@@ -314,11 +318,13 @@ export default class TasksListWidget {
     this.initItemsEvents(evt.currentTarget);
   }
 
+  // eslint-disable-next-line
   onDragOver(evt) {
     evt.preventDefault();
   }
 
   // Вход объекта в зону где может быть сброшен
+  // eslint-disable-next-line
   onDragEnter(evt) {
     // console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
@@ -327,6 +333,7 @@ export default class TasksListWidget {
   }
 
   // Выход объекта из зоны где может быть сброшен
+  // eslint-disable-next-line
   onDragLeave(evt) {
     // console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
@@ -348,6 +355,7 @@ export default class TasksListWidget {
   }
 
   // Показать карточку добавления новой задачи
+  // eslint-disable-next-line
   onClickShowCard(evt, cardDiv) {
     evt.preventDefault();
     if (cardDiv && cardDiv.classList.contains('hidden')) {
@@ -357,6 +365,7 @@ export default class TasksListWidget {
   }
 
   // Закрыть карточку добавления новой задачи
+  // eslint-disable-next-line
   onClickCloseCard(evt, cardDiv, showCard) {
     evt.preventDefault();
     if (showCard && showCard.classList.contains('hidden')) {
