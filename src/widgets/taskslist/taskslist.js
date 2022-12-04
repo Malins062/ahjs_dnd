@@ -88,16 +88,16 @@ export default class TasksListWidget {
             <div class="tasks__footer card-footer text-start p-2">
                 <div class="item__add">&#10009; Добавить новую карточку</div>
                 <div class="item__card hidden">
-                  <div class="form-outline mb-2">
-                    <textarea class="new__item__text form-control" rows="2" 
+                  <form class="form-outline mb-2">
+                    <textarea class="new__item__text form-control mb-2" type="submit"
                       placeholder="Введите текст карточки"></textarea>
-                  </div>
-                  <button class="new__item__add btn btn-success btn-sm" title="Добавить новую задачу">
-                    Добавить
-                  </button>
-                  <button class="new__item__close btn btn-transparent btn-sm" title="Закрыть окно добавления">
-                    &#10005;
-                  </button>
+                    <button class="new__item__add btn btn-success btn-sm" title="Добавить новую задачу">
+                      Добавить
+                    </button>
+                    <button class="new__item__close btn btn-transparent btn-sm" title="Закрыть окно добавления">
+                      &#10005;
+                    </button>
+                  </form>
                 </div>
             </div>
         </div>
@@ -213,14 +213,13 @@ export default class TasksListWidget {
     const tasksListItems = tasksCard.querySelector(TasksListWidget.listItemsSelector);
 
     // Отработка событий на добавлении новой карточки-задачи
-    const cardItem = tasksCard.querySelector(TasksListWidget.cardDivSelector);
     const showCardItem = tasksCard.querySelector(TasksListWidget.showCardSelector);
     const addNewItem = tasksCard.querySelector(TasksListWidget.addCardSelector);
     const closeCardItem = tasksCard.querySelector(TasksListWidget.closeCardSelector);
 
-    showCardItem.addEventListener('click', (evt) => this.onClickShowCard(evt, cardItem));
-    addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, cardItem, tasksListItems));
-    closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, cardItem, showCardItem));
+    showCardItem.addEventListener('click', (evt) => this.onClickShowCard(evt, tasksCard));
+    addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, tasksCard, tasksListItems));
+    closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, tasksCard));
 
     this.onDragEnter = this.onDragEnter.bind(this);
     this.onDragLeave = this.onDragLeave.bind(this);
@@ -341,9 +340,10 @@ export default class TasksListWidget {
   }
 
   // Добавление новой задачи
-  onClickAddCard(evt, cardDiv, ul) {
+  onClickAddCard(evt, card, ul) {
     evt.preventDefault();
-    const textItem = cardDiv.querySelector(TasksListWidget.textNewItemSelector);
+    const cardItem = card.querySelector(TasksListWidget.cardDivSelector);
+    const textItem = cardItem.querySelector(TasksListWidget.textNewItemSelector);
     if (textItem.value.trim().length > 0) {
       // eslint-disable-next-line no-param-reassign
       ul.innerHTML += TasksListWidget.itemHTML([textItem.value]).innerHTML;
@@ -352,25 +352,29 @@ export default class TasksListWidget {
       this.initItemsEvents(ul);
     }
     textItem.value = '';
+    this.onClickCloseCard(evt, card);
   }
 
   // Показать карточку добавления новой задачи
   // eslint-disable-next-line
-  onClickShowCard(evt, cardDiv) {
+  onClickShowCard(evt, card) {
     evt.preventDefault();
-    if (cardDiv && cardDiv.classList.contains('hidden')) {
-      cardDiv.classList.remove('hidden');
+    const cardItem = card.querySelector(TasksListWidget.cardDivSelector);
+    if (cardItem && cardItem.classList.contains('hidden')) {
+      cardItem.classList.remove('hidden');
     }
     evt.target.classList.add('hidden');
   }
 
   // Закрыть карточку добавления новой задачи
   // eslint-disable-next-line
-  onClickCloseCard(evt, cardDiv, showCard) {
+  onClickCloseCard(evt, card) {
     evt.preventDefault();
+    const cardItem = card.querySelector(TasksListWidget.cardDivSelector);
+    const showCard = card.querySelector(TasksListWidget.showCardSelector);
     if (showCard && showCard.classList.contains('hidden')) {
       showCard.classList.remove('hidden');
     }
-    cardDiv.classList.add('hidden');
+    cardItem.classList.add('hidden');
   }
 }
