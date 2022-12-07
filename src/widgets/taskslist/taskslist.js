@@ -298,7 +298,7 @@ export default class TasksListWidget {
     this.dragItem = evt.currentTarget;
     // const closeButton = this.dragItem.querySelector(TasksListWidget.delItemSelector);
     // TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
-    console.log('onDragStart', this.dragItem);
+    // console.log('onDragStart', this.dragItem);
 
     this.onDrag(evt);
   }
@@ -343,6 +343,8 @@ export default class TasksListWidget {
   // eslint-disable-next-line
   onDragOver(evt) {
     evt.preventDefault();
+    const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
+    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
   }
 
   // Вход объекта в зону где может быть сброшен
@@ -360,8 +362,8 @@ export default class TasksListWidget {
     //   }  
     // }
 
-    const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
-    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
+    // const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
+    // TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
 
     // console.log('highlight enter', tasksCard.className);
   }
