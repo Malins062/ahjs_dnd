@@ -62,9 +62,9 @@
 }
 
 .tasks__item.dragging {
-  /* background-color: rgb(230, 245, 182); */
+  background-color: pink;
   border-radius: 5px;
-  box-shadow: 0 0 10px rgb(1, 59, 35); /* Параметры тени */
+  box-shadow: 0 0 10px red; /* Параметры тени */
   /* padding: 10px; */
 
   /* position: absolute; */
@@ -72,8 +72,7 @@
   /* pointer-events: none; */
   /* cursor: grabbing !important; */
   opacity: .5;
-  transform: scale(.9);
-
+  /* transform: scale(.9); */
   /* transform: rotate(2deg);
   -webkit-transform: rotate(2deg);
   -o-transform: rotate(2deg);

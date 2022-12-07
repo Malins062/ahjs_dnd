@@ -25,6 +25,7 @@ class TasksListWidget
 
 const STYLE_DRAGGING = 'dragging';
 const STYLE_DROP = 'drop';
+const STYLE_HIDDEN = 'hidden';
 const DATA_KEY = 'taskslist';
 
 export default class TasksListWidget {
@@ -33,6 +34,7 @@ export default class TasksListWidget {
     this.isUseStorage = isUseStorage;
     this.shiftX = 0;
     this.shiftY = 0;
+    this.dragItem = undefined;
 
     this.storage = new Storage();
     if (isUseStorage) {
@@ -240,11 +242,28 @@ export default class TasksListWidget {
   }
 
   initItemEvents(item) {
+    TasksListWidget.highlightTarget(item, STYLE_DRAGGING);
+
     // Событие удаления задачи
     const closeButton = item.querySelector(TasksListWidget.delItemSelector);
     closeButton.addEventListener('click', () => {
       item.remove();
       this.saveItems();
+    });
+
+    // Событие входа в зону наведения курсора на задачу
+    item.addEventListener('mousedown', (evt) => {
+      TasksListWidget.highlightTarget(item, STYLE_DRAGGING, true);
+      if (!closeButton.classList.contains('hidden')) {
+        closeButton.classList.add('hidden');
+      }
+    });
+
+    item.addEventListener('mouseup', (evt) => {
+      TasksListWidget.highlightTarget(item, STYLE_DRAGGING);
+      if (closeButton.classList.contains('hidden')) {
+        closeButton.classList.remove('hidden');
+      }
     });
 
     // Событие входа в зону наведения курсора на задачу
@@ -276,8 +295,11 @@ export default class TasksListWidget {
   // Начало перетаскивания объекта
   // eslint-disable-next-line
   onDragStart(evt) {
-    // console.log('onDragStart');
-    TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
+    this.dragItem = evt.currentTarget;
+    // const closeButton = this.dragItem.querySelector(TasksListWidget.delItemSelector);
+    // TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
+    console.log('onDragStart', this.dragItem);
+
     this.onDrag(evt);
   }
 
@@ -286,6 +308,7 @@ export default class TasksListWidget {
   onDragEnd(evt) {
     // console.log('onDragEnd');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
+    this.dragItem = undefined;
   }
 
   // Перетаскивание объекта
@@ -326,8 +349,20 @@ export default class TasksListWidget {
   // eslint-disable-next-line
   onDragEnter(evt) {
     // console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
+    // if (this.dragItem) {
+    //   this.dragItem.remove('hidden');
+    //   const element = document.elementFromPoint(evt.clientX, evt.clientY);
+    //   if (!element.classList.contains(TasksListWidget.itemClass)) {
+    //     // eslint-disable-next-line no-param-reassign
+    //     evt.currentTarget.innerHTML += evt.dataTransfer.getData('text/html');
+    //   } else {
+    //     element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
+    //   }  
+    // }
+
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
+
     // console.log('highlight enter', tasksCard.className);
   }
 
@@ -335,6 +370,10 @@ export default class TasksListWidget {
   // eslint-disable-next-line
   onDragLeave(evt) {
     // console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
+    // if (this.dragItem) {
+    //   this.dragItem.add('hidden');
+    // }
+
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
   }
