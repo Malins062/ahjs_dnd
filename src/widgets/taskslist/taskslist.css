@@ -47,7 +47,7 @@
   font-weight: bolder;
 }
 
-.tasks__item:hover {
+.tasks__item.hovered {
   background-color: rgb(152, 253, 219);
 }
 
