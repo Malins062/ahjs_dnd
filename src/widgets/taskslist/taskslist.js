@@ -91,7 +91,7 @@ export default class TasksListWidget {
                 <div class="item__add">&#10009; Добавить новую карточку</div>
                 <div class="item__card hidden">
                   <form class="form-outline mb-2">
-                    <textarea class="new__item__text form-control mb-2" type="submit"
+                    <textarea class="new__item__text form-control mb-2"
                       placeholder="Введите текст карточки"></textarea>
                     <button class="new__item__add btn btn-success btn-sm" title="Добавить новую задачу">
                       Добавить
@@ -173,6 +173,18 @@ export default class TasksListWidget {
     }, 0);
   }
 
+  static getNextElement(cursorPosition, currentElement) {
+    const currentElementCoord = currentElement.getBoundingClientRect();
+    const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
+    
+    const nextElement = (cursorPosition < currentElementCenter) ?
+      currentElement :
+      currentElement.nextSibling;
+      // currentElement.nextElementSibling;
+    
+    return nextElement;
+  };
+
   // Разметка HTML и отслеживание событий
   bindToDOM() {
     // Отрисовка HTML
@@ -216,18 +228,18 @@ export default class TasksListWidget {
 
     // Отработка событий на добавлении новой карточки-задачи
     const showCardItem = tasksCard.querySelector(TasksListWidget.showCardSelector);
+    const textareaItem = tasksCard.querySelector(TasksListWidget.textNewItemSelector);
     const addNewItem = tasksCard.querySelector(TasksListWidget.addCardSelector);
     const closeCardItem = tasksCard.querySelector(TasksListWidget.closeCardSelector);
 
     showCardItem.addEventListener('click', (evt) => this.onClickShowCard(evt, tasksCard));
+    textareaItem.addEventListener('keydown', (evt) => this.onEnterNewItem(evt, tasksCard, tasksListItems));
     addNewItem.addEventListener('click', (evt) => this.onClickAddCard(evt, tasksCard, tasksListItems));
     closeCardItem.addEventListener('click', (evt) => this.onClickCloseCard(evt, tasksCard));
 
-    this.onDragEnter = this.onDragEnter.bind(this);
     this.onDragLeave = this.onDragLeave.bind(this);
     this.onDrop = this.onDrop.bind(this);
     this.onDragOver = this.onDragOver.bind(this);
-    tasksListItems.addEventListener('dragenter', this.onDragEnter);
     tasksListItems.addEventListener('dragleave', this.onDragLeave);
     tasksListItems.addEventListener('drop', this.onDrop);
     tasksListItems.addEventListener('dragover', this.onDragOver);
@@ -277,7 +289,7 @@ export default class TasksListWidget {
     // Событие выхода из зоны наведения курсора на задачу
     item.addEventListener('mouseout', (evt) => {
       evt.preventDefault();
-      const delButtons = document.querySelectorAll(TasksListWidget.delItemSelector);
+      const delButtons = this.parentEl.querySelectorAll(TasksListWidget.delItemSelector);
       delButtons.forEach((delButton) => {
         if (delButton && !delButton.classList.contains('hidden')) {
           delButton.classList.add('hidden');
@@ -285,7 +297,6 @@ export default class TasksListWidget {
       });
     });
 
-    this.onDrag = this.onDrag.bind(this);
     this.onDragStart = this.onDragStart.bind(this);
     this.onDragEnd = this.onDragEnd.bind(this);
     item.addEventListener('dragstart', this.onDragStart);
@@ -295,46 +306,28 @@ export default class TasksListWidget {
   // Начало перетаскивания объекта
   // eslint-disable-next-line
   onDragStart(evt) {
+    evt.dataTransfer.setData('text/html', evt.currentTarget.outerHTML);
+    evt.dataTransfer.setData('text/plain', evt.currentTarget.dataset.id);
     this.dragItem = evt.currentTarget;
-    // const closeButton = this.dragItem.querySelector(TasksListWidget.delItemSelector);
-    // TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
+    TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING, true);
     // console.log('onDragStart', this.dragItem);
-
-    this.onDrag(evt);
   }
 
   // Окончание перетаскивания объекта
   // eslint-disable-next-line
   onDragEnd(evt) {
-    // console.log('onDragEnd');
+    console.log('onDragEnd');
     TasksListWidget.highlightTarget(evt.currentTarget, STYLE_DRAGGING);
     this.dragItem = undefined;
-  }
-
-  // Перетаскивание объекта
-  // eslint-disable-next-line
-  onDrag(evt) {
-    // console.log('onDrag: ', evt.currentTarget.outerHTML, evt.currentTarget.dataset.id);
-    evt.dataTransfer.setData('text/html', evt.currentTarget.outerHTML);
-    evt.dataTransfer.setData('text/plain', evt.currentTarget.dataset.id);
+    this.tasksCard = undefined;
   }
 
   // Объект перетащен
   // eslint-disable-next-line
   onDrop(evt) {
+    // console.log('onDrop');
     const tasksCard = evt.currentTarget.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
-
-    document.querySelectorAll(TasksListWidget.listItemsSelector).forEach((column) => column.classList.remove('drop'));
-    document.querySelector(TasksListWidget.idSelector(evt.dataTransfer.getData('text/plain'))).remove();
-
-    const element = document.elementFromPoint(evt.clientX, evt.clientY);
-    if (!element.classList.contains(TasksListWidget.itemClass)) {
-      // eslint-disable-next-line no-param-reassign
-      evt.currentTarget.innerHTML += evt.dataTransfer.getData('text/html');
-    } else {
-      element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
-    }
 
     this.saveItems();
     this.initItemsEvents(evt.currentTarget);
@@ -343,41 +336,40 @@ export default class TasksListWidget {
   // eslint-disable-next-line
   onDragOver(evt) {
     evt.preventDefault();
+    
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
-    TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
-  }
+    if (this.tasksCard && this.tasksCard.dataset.id !== tasksCard.dataset.id) {
+      TasksListWidget.highlightTarget(this.tasksCard, STYLE_DROP);
+    }
+    this.tasksCard = tasksCard;
+    TasksListWidget.highlightTarget(this.tasksCard, STYLE_DROP, true);
 
-  // Вход объекта в зону где может быть сброшен
-  // eslint-disable-next-line
-  onDragEnter(evt) {
-    // console.log('onDragEnter', this.dragEnterTarget, evt.currentTarget, evt.target);
-    // if (this.dragItem) {
-    //   this.dragItem.remove('hidden');
-    //   const element = document.elementFromPoint(evt.clientX, evt.clientY);
-    //   if (!element.classList.contains(TasksListWidget.itemClass)) {
-    //     // eslint-disable-next-line no-param-reassign
-    //     evt.currentTarget.innerHTML += evt.dataTransfer.getData('text/html');
-    //   } else {
-    //     element.insertAdjacentHTML('beforebegin', evt.dataTransfer.getData('text/html'));
-    //   }  
-    // }
+    const currentElement = evt.target;
+    const isMoveable = this.dragItem !== currentElement &&
+      currentElement.classList.contains(TasksListWidget.itemClass);
 
-    // const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
-    // TasksListWidget.highlightTarget(tasksCard, STYLE_DROP, true);
-
-    // console.log('highlight enter', tasksCard.className);
+    if (!isMoveable) {
+      return;
+    }
+    
+    const nextElement = TasksListWidget.getNextElement(evt.clientY, currentElement);
+    const tasksList = evt.currentTarget.closest(TasksListWidget.listItemsSelector);
+    tasksList.insertBefore(this.dragItem, nextElement);
   }
 
   // Выход объекта из зоны где может быть сброшен
   // eslint-disable-next-line
   onDragLeave(evt) {
-    // console.log('onDragLeave', this.dragEnterTarget, evt.currentTarget, evt.target);
-    // if (this.dragItem) {
-    //   this.dragItem.add('hidden');
-    // }
-
     const tasksCard = evt.target.closest(TasksListWidget.cardSelector);
     TasksListWidget.highlightTarget(tasksCard, STYLE_DROP);
+  }
+
+  // Добавление новой задачи по нажатию Enter
+  onEnterNewItem(evt, card, ul) {
+    if (evt.key == 'Enter') {
+      evt.preventDefault();
+      this.onClickAddCard(evt, card, ul);
+    }
   }
 
   // Добавление новой задачи
